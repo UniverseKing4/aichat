@@ -96,23 +96,31 @@ class MainActivity : AppCompatActivity() {
         
         binding.navigationView.setNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_new_chat -> {
+                100001 -> {
                     createNewChat()
                     true
                 }
-                R.id.nav_system_prompt -> {
+                100002 -> {
                     showSystemPromptDialog()
                     true
                 }
-                R.id.nav_export -> {
+                100003 -> {
                     exportChat()
                     true
                 }
-                R.id.nav_import -> {
+                100004 -> {
                     importChat()
                     true
                 }
-                else -> false
+                else -> {
+                    val convs = conversationManager.getConversations()
+                    val conv = convs.find { it.id.hashCode() == item.itemId }
+                    if (conv != null) {
+                        loadConversation(conv.id)
+                        binding.drawerLayout.close()
+                        true
+                    } else false
+                }
             }
         }
         
@@ -122,21 +130,18 @@ class MainActivity : AppCompatActivity() {
     private fun updateDrawerConversations() {
         val menu = binding.navigationView.menu
         menu.clear()
-        menu.add(0, R.id.nav_new_chat, 0, "New Chat").setIcon(R.drawable.ic_add)
-        menu.add(0, R.id.nav_system_prompt, 1, "System Instructions").setIcon(R.drawable.ic_settings)
-        menu.add(0, R.id.nav_export, 2, "Export Chat").setIcon(R.drawable.ic_download)
-        menu.add(0, R.id.nav_import, 3, "Import Chat").setIcon(R.drawable.ic_upload)
+        
+        val group1 = menu.addSubMenu("Actions")
+        group1.add(0, 100001, 0, "New Chat").setIcon(R.drawable.ic_add)
+        group1.add(0, 100002, 1, "System Instructions").setIcon(R.drawable.ic_settings)
+        group1.add(0, 100003, 2, "Export Chat").setIcon(R.drawable.ic_download)
+        group1.add(0, 100004, 3, "Import Chat").setIcon(R.drawable.ic_upload)
         
         val convs = conversationManager.getConversations()
         if (convs.isNotEmpty()) {
-            menu.addSubMenu("Conversations")
-        }
-        convs.forEach { conv ->
-            val menuItem = menu.add(1, conv.id.hashCode(), 100, conv.name)
-            menuItem.setOnMenuItemClickListener {
-                loadConversation(conv.id)
-                binding.drawerLayout.close()
-                true
+            val group2 = menu.addSubMenu("Conversations")
+            convs.forEach { conv ->
+                group2.add(1, conv.id.hashCode(), 100, conv.name)
             }
         }
     }
