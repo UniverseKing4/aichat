@@ -460,6 +460,32 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
         
+        dialogBinding.balanceButton.setOnClickListener {
+            val key = dialogBinding.apiKeyInput.text.toString()
+            if (key.isEmpty()) {
+                Toast.makeText(this, "Enter API key first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            dialogBinding.balanceButton.isEnabled = false
+            dialogBinding.balanceButton.text = "Checking..."
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val balance = getApiBalance(key)
+                    withContext(Dispatchers.Main) {
+                        dialogBinding.balanceButton.isEnabled = true
+                        dialogBinding.balanceButton.text = "Check Balance"
+                        Toast.makeText(this@MainActivity, "Balance: $balance", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        dialogBinding.balanceButton.isEnabled = true
+                        dialogBinding.balanceButton.text = "Check Balance"
+                        Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }
+        
         dialogBinding.saveButton.setOnClickListener {
             val key = dialogBinding.apiKeyInput.text.toString()
             prefs.edit().putString("api_key", key).apply()
@@ -488,5 +514,28 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+    
+    private fun getApiBalance(apiKey: String): String {
+        if (apiKey.isEmpty()) return "Using default API"
+        
+        val client = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+        
+        val request = Request.Builder()
+            .url("https://gen.pollinations.ai/account/balance")
+            .addHeader("Authorization", "Bearer $apiKey")
+            .get()
+            .build()
+        
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) return "Unknown"
+            val body = response.body?.string() ?: return "Unknown"
+            val jsonResponse = JSONObject(body)
+            val balance = jsonResponse.optDouble("balance", -1.0)
+            return if (balance >= 0) String.format("%.5f Pollen", balance) else "Active"
+        }
     }
 }

@@ -47,6 +47,13 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
             } else {
                 binding.attachedImage.visibility = View.GONE
             }
+            
+            binding.copyButton.setOnClickListener {
+                val clipboard = binding.root.context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Message", message.text)
+                clipboard.setPrimaryClip(clip)
+                android.widget.Toast.makeText(binding.root.context, "Copied", android.widget.Toast.LENGTH_SHORT).show()
+            }
         }
     }
     
@@ -62,10 +69,12 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 binding.messageText.visibility = View.GONE
                 binding.generatedImage.visibility = View.GONE
                 binding.loadingIndicator.visibility = View.VISIBLE
+                binding.copyButton.visibility = View.GONE
             } else {
                 binding.messageText.visibility = View.VISIBLE
                 markwon.setMarkdown(binding.messageText, message.text)
                 binding.loadingIndicator.visibility = View.GONE
+                binding.copyButton.visibility = View.VISIBLE
                 if (message.generatedImageUrl != null) {
                     binding.generatedImage.visibility = View.VISIBLE
                     Glide.with(binding.root.context)
@@ -74,6 +83,13 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 } else {
                     binding.generatedImage.visibility = View.GONE
                 }
+            }
+            
+            binding.copyButton.setOnClickListener {
+                val clipboard = binding.root.context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("Message", message.text)
+                clipboard.setPrimaryClip(clip)
+                android.widget.Toast.makeText(binding.root.context, "Copied", android.widget.Toast.LENGTH_SHORT).show()
             }
         }
     }

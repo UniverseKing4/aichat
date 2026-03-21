@@ -69,6 +69,18 @@
                 android:visibility="gone"
                 android:contentDescription="Generated image" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/copyButton"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:text="Copy"
+                app:icon="@drawable/ic_copy"
+                app:iconSize="16dp"
+                android:textSize="12sp" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>

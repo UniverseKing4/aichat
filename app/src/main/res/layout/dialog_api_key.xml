@@ -68,6 +68,20 @@
         android:layout_marginTop="24dp">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/balanceButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Check Balance"
+            android:fontFamily="sans-serif-medium"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_marginEnd="auto" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

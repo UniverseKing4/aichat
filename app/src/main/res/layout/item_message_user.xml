@@ -41,6 +41,20 @@
                 android:gravity="end"
                 android:textAlignment="viewEnd" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/copyButton"
+                style="@style/Widget.Material3.Button.TextButton.Icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="4dp"
+                android:text="Copy"
+                android:textColor="@android:color/white"
+                app:icon="@drawable/ic_copy"
+                app:iconTint="@android:color/white"
+                app:iconSize="16dp"
+                android:textSize="12sp" />
+
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
