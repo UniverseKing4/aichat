@@ -170,6 +170,8 @@ class MainActivity : AppCompatActivity() {
         val text = binding.messageInput.text.toString().trim()
         if (text.isEmpty()) return
         
+        binding.sendButton.isEnabled = false
+        
         val imageToSend = selectedImageUri
         val userMessage = ChatMessage(text, true, imageUri = imageToSend)
         chatMessages.add(userMessage)
@@ -199,6 +201,7 @@ class MainActivity : AppCompatActivity() {
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
                     binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                     saveChatHistory()
+                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -206,6 +209,7 @@ class MainActivity : AppCompatActivity() {
                     chatMessages.removeAt(loadingPosition)
                     chatAdapter.notifyItemRemoved(loadingPosition)
                     Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                 }
             }
         }
@@ -217,6 +221,8 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Enter image description", Toast.LENGTH_SHORT).show()
             return
         }
+        
+        binding.sendButton.isEnabled = false
         
         val userMessage = ChatMessage("🎨 Generate: $prompt", true)
         chatMessages.add(userMessage)
@@ -245,6 +251,7 @@ class MainActivity : AppCompatActivity() {
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
                     binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                     saveChatHistory()
+                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -252,6 +259,7 @@ class MainActivity : AppCompatActivity() {
                     chatMessages.removeAt(loadingPosition)
                     chatAdapter.notifyItemRemoved(loadingPosition)
                     Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                 }
             }
         }
