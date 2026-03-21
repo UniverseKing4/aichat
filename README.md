@@ -1,17 +1,19 @@
 # AI Chat
 
-AI Chat is an Android application that provides AI-powered chat capabilities using the Pollinations AI API.
+AI Chat is a powerful Android application that provides comprehensive AI-powered chat capabilities using the Pollinations AI API.
 
 ## Features
 
-- 🤖 Multiple AI models (12 free models including OpenAI, Gemini, Claude, DeepSeek)
-- 🖼️ Image analysis support with vision models
-- 🌓 Dark/Light theme
-- 📱 Material Design 3
-- 🔄 Automatic builds via GitHub Actions
-- 🎨 Markdown rendering for responses
-- ⚡ Fast & responsive UI
-- 🔒 Optional API key (works without one)
+- 💬 **Full Chat Interface** - Natural conversation with AI models
+- 🤖 **12 Free AI Models** - OpenAI, Gemini, Claude, DeepSeek, and more
+- 🖼️ **Image Analysis** - Attach images to your messages for vision-based AI analysis
+- 🎨 **Image Generation** - Create images from text descriptions using FLUX and other models
+- 🌓 **Dark/Light Theme** - Beautiful Material Design 3 UI in both themes
+- 📱 **Material Design 3** - Modern, polished, and responsive interface
+- 🔄 **Automatic Builds** - CI/CD via GitHub Actions
+- ⚡ **Fast & Smooth** - Optimized performance with no lags
+- 🔒 **Optional API Key** - Works without one using default service
+- ✨ **Markdown Support** - Rich text formatting in responses
 
 ## Build
 
@@ -37,7 +39,7 @@ Use the included monitor script to track builds and download releases:
 
 ### API Key (Optional)
 
-The app works without an API key using the default proxy. For custom API keys:
+The app works without an API key. For custom API keys:
 
 1. Open Settings in the app
 2. Enter your Pollinations AI API key
@@ -59,6 +61,29 @@ Available free models:
 - `minimax` - MiniMax M2.5 (Coding & Agentic)
 - `polly` - Polly AI Assistant (GitHub & Web Tools)
 
+## How to Use
+
+### Text Chat
+1. Type your message in the input field
+2. Press send to chat with AI
+3. Responses appear with markdown formatting
+
+### Image Analysis
+1. Tap the gallery icon to attach an image
+2. Type your question about the image
+3. Send to get AI analysis with vision models
+
+### Image Generation
+1. Type a description of the image you want
+2. Tap the camera icon to generate
+3. AI creates and displays the image
+
+### Features
+- **Clear Chat** - Remove all messages from toolbar
+- **Model Selection** - Choose from 12 AI models
+- **Dark Mode** - Toggle theme from toolbar
+- **Settings** - Configure API key
+
 ## Development
 
 ### Requirements
@@ -75,7 +100,8 @@ app/
 │   ├── java/com/aichat/app/
 │   │   ├── MainActivity.kt
 │   │   ├── AIChatApp.kt
-│   │   └── ImagePagerAdapter.kt
+│   │   ├── ChatMessage.kt
+│   │   └── ChatAdapter.kt
 │   ├── res/
 │   └── AndroidManifest.xml
 ├── build.gradle.kts
