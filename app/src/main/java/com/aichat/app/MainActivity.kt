@@ -198,10 +198,6 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton("Cancel", null)
             .show()
     }
-                else -> false
-            }
-        }
-    }
     
     private fun setupRecyclerView() {
         chatAdapter = ChatAdapter(chatMessages)
