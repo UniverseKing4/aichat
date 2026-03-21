@@ -79,6 +79,17 @@ class MainActivity : AppCompatActivity() {
             adapter = chatAdapter
         }
         loadChatHistory()
+        updateEmptyState()
+    }
+    
+    private fun updateEmptyState() {
+        if (chatMessages.isEmpty()) {
+            binding.emptyStateLayout.visibility = View.VISIBLE
+            binding.chatRecyclerView.visibility = View.GONE
+        } else {
+            binding.emptyStateLayout.visibility = View.GONE
+            binding.chatRecyclerView.visibility = View.VISIBLE
+        }
     }
     
     private fun loadChatHistory() {
@@ -180,6 +191,7 @@ class MainActivity : AppCompatActivity() {
         chatMessages.add(userMessage)
         chatAdapter.notifyItemInserted(chatMessages.size - 1)
         binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+        updateEmptyState()
         
         binding.messageInput.text?.clear()
         removeImage()
@@ -417,6 +429,7 @@ class MainActivity : AppCompatActivity() {
                 chatMessages.clear()
                 chatAdapter.notifyDataSetChanged()
                 prefs.edit().remove("chat_history").apply()
+                updateEmptyState()
             }
             .setNegativeButton("Cancel", null)
             .show()
