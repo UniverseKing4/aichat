@@ -45,6 +45,10 @@ class MainActivity : AppCompatActivity() {
     private var chatJob: Job? = null
     private var selectedImageUri: Uri? = null
     
+    private lateinit var conversationManager: ConversationManager
+    private var currentConversationId: String = ""
+    private var systemPrompt: String = ""
+    
     private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             result.data?.data?.let { uri ->
@@ -52,6 +56,14 @@ class MainActivity : AppCompatActivity() {
                 binding.attachedImage.visibility = View.VISIBLE
                 binding.attachedImage.setImageURI(uri)
                 binding.removeImageButton.visibility = View.VISIBLE
+            }
+        }
+    }
+    
+    private val pickFile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                importChat(uri)
             }
         }
     }
@@ -68,8 +80,72 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         window.setBackgroundDrawableResource(R.color.background)
         
+        conversationManager = ConversationManager(this)
+        initConversation()
         setupRecyclerView()
         setupListeners()
+        setupDrawer()
+    }
+    
+    private fun initConversation() {
+        val lastId = prefs.getString("last_conv_id", null)
+        val convs = conversationManager.getConversations()
+        currentConversationId = if (lastId != null && convs.any { it.id == lastId }) {
+            lastId
+        } else {
+            if (convs.isEmpty()) {
+                conversationManager.createNew("Chat 1").id
+            } else {
+                convs.first().id
+            }
+        }
+        prefs.edit().putString("last_conv_id", currentConversationId).apply()
+        val conv = conversationManager.getConversations().find { it.id == currentConversationId }
+        systemPrompt = conv?.systemPrompt ?: ""
+        loadChatHistory()
+    }
+    
+    private fun setupDrawer() {
+        binding.toolbar.setNavigationOnClickListener {
+            binding.drawerLayout.open()
+        }
+        updateDrawerConversations()
+    }
+    
+    private fun updateDrawerConversations() {
+        val header = layoutInflater.inflate(R.layout.nav_header, binding.navigationView, false)
+        binding.navigationView.removeHeaderView(binding.navigationView.getHeaderView(0) ?: header)
+        binding.navigationView.addHeaderView(header)
+        
+        val menu = binding.navigationView.menu
+        menu.clear()
+        
+        menu.add(0, 1, 0, "New Chat").setIcon(R.drawable.ic_add)
+        menu.add(0, 2, 1, "System Instructions").setIcon(R.drawable.ic_settings)
+        menu.add(0, 3, 2, "Export Chat").setIcon(R.drawable.ic_download)
+        menu.add(0, 4, 3, "Import Chat").setIcon(R.drawable.ic_upload)
+        
+        val convs = conversationManager.getConversations()
+        if (convs.isNotEmpty()) {
+            menu.addSubMenu("Conversations")
+        }
+        convs.forEach { conv ->
+            val item = menu.add(1, conv.id.hashCode(), 100, conv.name)
+            item.setOnMenuItemClickListener {
+                loadConversation(conv.id)
+                true
+            }
+        }
+        
+        binding.navigationView.setNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                1 -> { createNewChat(); true }
+                2 -> { showSystemPromptDialog(); true }
+                3 -> { exportChat(); true }
+                4 -> { selectFileToImport(); true }
+                else -> false
+            }
+        }
     }
     
     private fun setupRecyclerView() {
@@ -116,7 +192,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun loadChatHistory() {
-        val savedMessages = prefs.getString("chat_history", null)
+        val savedMessages = conversationManager.getMessages(currentConversationId)
         if (savedMessages != null) {
             try {
                 val jsonArray = JSONArray(savedMessages)
@@ -147,8 +223,94 @@ class MainActivity : AppCompatActivity() {
                 }
                 jsonArray.put(obj)
             }
-            prefs.edit().putString("chat_history", jsonArray.toString()).apply()
+            conversationManager.saveMessages(currentConversationId, jsonArray.toString())
         } catch (e: Exception) {}
+    }
+    
+    private fun loadConversation(convId: String) {
+        saveChatHistory()
+        currentConversationId = convId
+        prefs.edit().putString("last_conv_id", convId).apply()
+        chatMessages.clear()
+        loadChatHistory()
+        chatAdapter.notifyDataSetChanged()
+        updateEmptyState()
+        binding.drawerLayout.close()
+        
+        val conv = conversationManager.getConversations().find { it.id == convId }
+        systemPrompt = conv?.systemPrompt ?: ""
+    }
+    
+    private fun createNewChat() {
+        val input = android.widget.EditText(this).apply {
+            hint = "Chat name"
+            setPadding(48, 32, 48, 32)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("New Chat")
+            .setView(input)
+            .setPositiveButton("Create") { _, _ ->
+                val name = input.text.toString().ifBlank { "Chat ${conversationManager.getConversations().size + 1}" }
+                val conv = conversationManager.createNew(name)
+                loadConversation(conv.id)
+                updateDrawerConversations()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun showSystemPromptDialog() {
+        val input = android.widget.EditText(this).apply {
+            setText(systemPrompt)
+            hint = "System instructions"
+            setPadding(48, 32, 48, 32)
+            minLines = 3
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("System Instructions")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                systemPrompt = input.text.toString()
+                val conv = conversationManager.getConversations().find { it.id == currentConversationId }
+                if (conv != null) {
+                    conversationManager.saveConversation(conv.copy(systemPrompt = systemPrompt))
+                }
+                binding.drawerLayout.close()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun exportChat() {
+        try {
+            val json = conversationManager.getMessages(currentConversationId) ?: "[]"
+            val file = java.io.File(getExternalFilesDir(null), "chat_${System.currentTimeMillis()}.json")
+            file.writeText(json)
+            Toast.makeText(this, "Exported: ${file.name}", Toast.LENGTH_LONG).show()
+            binding.drawerLayout.close()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun selectFileToImport() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+            type = "*/*"
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
+        pickFile.launch(intent)
+    }
+    
+    private fun importChat(uri: Uri) {
+        try {
+            val json = contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return
+            conversationManager.saveMessages(currentConversationId, json)
+            loadConversation(currentConversationId)
+            Toast.makeText(this, "Imported successfully", Toast.LENGTH_SHORT).show()
+            binding.drawerLayout.close()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Import failed", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun setupListeners() {
@@ -315,6 +477,14 @@ class MainActivity : AppCompatActivity() {
         val json = JSONObject().apply {
             put("model", model)
             put("messages", JSONArray().apply {
+                // Add system prompt if exists
+                if (systemPrompt.isNotBlank()) {
+                    put(JSONObject().apply {
+                        put("role", "system")
+                        put("content", systemPrompt)
+                    })
+                }
+                
                 // Add conversation history
                 chatMessages.filter { !it.isLoading && it.generatedImageUrl == null }.forEach { msg ->
                     put(JSONObject().apply {
@@ -451,7 +621,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Clear") { _, _ ->
                 chatMessages.clear()
                 chatAdapter.notifyDataSetChanged()
-                prefs.edit().remove("chat_history").apply()
+                conversationManager.saveMessages(currentConversationId, "[]")
                 updateEmptyState()
             }
             .setNegativeButton("Cancel", null)
