@@ -26,6 +26,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 app:icon="@drawable/ic_dark_mode"
+                app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Dark Mode" />
             
             <com.google.android.material.button.MaterialButton
@@ -34,6 +35,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 app:icon="@drawable/ic_settings"
+                app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Settings" />
                 
         </LinearLayout>
@@ -119,7 +121,7 @@
                         style="@style/Widget.Material3.Button.IconButton"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        app:icon="@android:drawable/ic_menu_camera"
+                        app:icon="@drawable/ic_image"
                         app:iconTint="@color/accent"
                         android:contentDescription="Generate image" />
 

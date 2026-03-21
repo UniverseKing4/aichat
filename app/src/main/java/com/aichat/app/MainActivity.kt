@@ -77,6 +77,43 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = chatAdapter
         }
+        loadChatHistory()
+    }
+    
+    private fun loadChatHistory() {
+        val savedMessages = prefs.getString("chat_history", null)
+        if (savedMessages != null) {
+            try {
+                val jsonArray = JSONArray(savedMessages)
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    val message = ChatMessage(
+                        text = obj.getString("text"),
+                        isUser = obj.getBoolean("isUser"),
+                        imageUri = if (obj.has("imageUri")) Uri.parse(obj.getString("imageUri")) else null,
+                        generatedImageUrl = if (obj.has("generatedImageUrl")) obj.getString("generatedImageUrl") else null
+                    )
+                    chatMessages.add(message)
+                }
+                chatAdapter.notifyDataSetChanged()
+            } catch (e: Exception) {}
+        }
+    }
+    
+    private fun saveChatHistory() {
+        try {
+            val jsonArray = JSONArray()
+            chatMessages.filter { !it.isLoading }.forEach { message ->
+                val obj = JSONObject().apply {
+                    put("text", message.text)
+                    put("isUser", message.isUser)
+                    if (message.imageUri != null) put("imageUri", message.imageUri.toString())
+                    if (message.generatedImageUrl != null) put("generatedImageUrl", message.generatedImageUrl)
+                }
+                jsonArray.put(obj)
+            }
+            prefs.edit().putString("chat_history", jsonArray.toString()).apply()
+        } catch (e: Exception) {}
     }
     
     private fun setupListeners() {
@@ -84,7 +121,10 @@ class MainActivity : AppCompatActivity() {
         binding.attachImageButton.setOnClickListener { checkPermissionAndSelectImage() }
         binding.removeImageButton.setOnClickListener { removeImage() }
         binding.generateImageButton.setOnClickListener { generateImage() }
-        binding.darkModeButton.setOnClickListener { toggleDarkMode() }
+        binding.darkModeButton.setOnClickListener { 
+            toggleDarkMode()
+            updateDarkModeIcon()
+        }
         binding.settingsButton.setOnClickListener { showApiKeyDialog() }
         
         binding.messageInput.addTextChangedListener(object : android.text.TextWatcher {
@@ -94,6 +134,14 @@ class MainActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+        
+        updateDarkModeIcon()
+    }
+    
+    private fun updateDarkModeIcon() {
+        val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+        val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        binding.darkModeButton.setIconResource(if (isDark) R.drawable.ic_light_mode else R.drawable.ic_dark_mode)
     }
     
     private fun checkPermissionAndSelectImage() {
@@ -138,7 +186,7 @@ class MainActivity : AppCompatActivity() {
         
         chatJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = callChatAPI(text, imageToSend)
+                val response = callChatAPI(imageToSend)
                 withContext(Dispatchers.Main) {
                     // Remove loading message
                     chatMessages.removeAt(loadingPosition)
@@ -148,6 +196,7 @@ class MainActivity : AppCompatActivity() {
                     chatMessages.add(botMessage)
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
                     binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                    saveChatHistory()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -193,6 +242,7 @@ class MainActivity : AppCompatActivity() {
                     chatMessages.add(botMessage)
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
                     binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                    saveChatHistory()
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -205,7 +255,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun callChatAPI(message: String, imageUri: Uri?): String {
+    private fun callChatAPI(imageUri: Uri?): String {
         val apiKey = prefs.getString("api_key", "") ?: ""
         val model = prefs.getString("model", "openai") ?: "openai"
         
@@ -217,15 +267,24 @@ class MainActivity : AppCompatActivity() {
         val json = JSONObject().apply {
             put("model", model)
             put("messages", JSONArray().apply {
-                put(JSONObject().apply {
-                    put("role", "user")
-                    if (imageUri != null) {
-                        val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
-                        val base64 = bitmapToBase64(bitmap)
+                // Add conversation history
+                chatMessages.filter { !it.isLoading && it.generatedImageUrl == null }.forEach { msg ->
+                    put(JSONObject().apply {
+                        put("role", if (msg.isUser) "user" else "assistant")
+                        put("content", msg.text)
+                    })
+                }
+                
+                // Add current message with image if present
+                if (imageUri != null) {
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+                    val base64 = bitmapToBase64(bitmap)
+                    put(JSONObject().apply {
+                        put("role", "user")
                         put("content", JSONArray().apply {
                             put(JSONObject().apply {
                                 put("type", "text")
-                                put("text", message)
+                                put("text", chatMessages.last { it.isUser }.text)
                             })
                             put(JSONObject().apply {
                                 put("type", "image_url")
@@ -234,10 +293,8 @@ class MainActivity : AppCompatActivity() {
                                 })
                             })
                         })
-                    } else {
-                        put("content", message)
-                    }
-                })
+                    })
+                }
             })
         }
         
@@ -357,6 +414,7 @@ class MainActivity : AppCompatActivity() {
             .setPositiveButton("Clear") { _, _ ->
                 chatMessages.clear()
                 chatAdapter.notifyDataSetChanged()
+                prefs.edit().remove("chat_history").apply()
             }
             .setNegativeButton("Cancel", null)
             .show()
