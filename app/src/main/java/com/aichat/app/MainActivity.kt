@@ -68,6 +68,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
+    private val createFile = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.let { uri ->
+                exportChatToUri(uri)
+            }
+        }
+    }
+    
     private val requestPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) selectImage() else Toast.makeText(this, "Permission denied", Toast.LENGTH_SHORT).show()
     }
@@ -329,11 +337,21 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun exportChat() {
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/json"
+            putExtra(Intent.EXTRA_TITLE, "chat_${System.currentTimeMillis()}.json")
+        }
+        createFile.launch(intent)
+    }
+    
+    private fun exportChatToUri(uri: Uri) {
         try {
             val json = conversationManager.getMessages(currentConversationId) ?: "[]"
-            val file = java.io.File(getExternalFilesDir(null), "chat_${System.currentTimeMillis()}.json")
-            file.writeText(json)
-            Toast.makeText(this, "Exported: ${file.name}", Toast.LENGTH_LONG).show()
+            contentResolver.openOutputStream(uri)?.use { output ->
+                output.write(json.toByteArray())
+            }
+            Toast.makeText(this, "Exported successfully", Toast.LENGTH_SHORT).show()
             binding.drawerLayout.close()
         } catch (e: Exception) {
             Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show()
