@@ -109,40 +109,87 @@ class MainActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener {
             binding.drawerLayout.open()
         }
+        
+        val drawerContent = binding.navigationView.getChildAt(0)
+        val btnNewChat = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNewChat)
+        val btnSystemPrompt = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSystemPrompt)
+        val btnExport = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExport)
+        val btnImport = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImport)
+        val conversationsRv = drawerContent.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
+        
+        btnNewChat.setOnClickListener { createNewChat() }
+        btnSystemPrompt.setOnClickListener { showSystemPromptDialog() }
+        btnExport.setOnClickListener { exportChat() }
+        btnImport.setOnClickListener { selectFileToImport() }
+        
+        conversationsRv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         updateDrawerConversations()
     }
     
     private fun updateDrawerConversations() {
-        val header = layoutInflater.inflate(R.layout.nav_header, binding.navigationView, false)
-        binding.navigationView.removeHeaderView(binding.navigationView.getHeaderView(0) ?: header)
-        binding.navigationView.addHeaderView(header)
-        
-        val menu = binding.navigationView.menu
-        menu.clear()
-        
-        menu.add(0, 1, 0, "New Chat").setIcon(R.drawable.ic_add)
-        menu.add(0, 2, 1, "System Instructions").setIcon(R.drawable.ic_settings)
-        menu.add(0, 3, 2, "Export Chat").setIcon(R.drawable.ic_download)
-        menu.add(0, 4, 3, "Import Chat").setIcon(R.drawable.ic_upload)
+        val drawerContent = binding.navigationView.getChildAt(0)
+        val conversationsRv = drawerContent.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         val convs = conversationManager.getConversations()
-        if (convs.isNotEmpty()) {
-            menu.addSubMenu("Conversations")
-        }
-        convs.forEach { conv ->
-            val item = menu.add(1, conv.id.hashCode(), 100, conv.name)
-            item.setOnMenuItemClickListener {
-                loadConversation(conv.id)
-                true
+        conversationsRv.adapter = ConversationAdapter(
+            conversations = convs,
+            currentId = currentConversationId,
+            onClick = { conv -> loadConversation(conv.id) },
+            onLongClick = { conv -> showConversationOptions(conv) }
+        )
+    }
+    
+    private fun showConversationOptions(conv: Conversation) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(conv.name)
+            .setItems(arrayOf("Rename", "Delete")) { _, which ->
+                when (which) {
+                    0 -> renameConversation(conv)
+                    1 -> deleteConversation(conv)
+                }
             }
+            .show()
+    }
+    
+    private fun renameConversation(conv: Conversation) {
+        val input = android.widget.EditText(this).apply {
+            setText(conv.name)
+            hint = "Chat name"
+            setPadding(48, 32, 48, 32)
+            selectAll()
         }
-        
-        binding.navigationView.setNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                1 -> { createNewChat(); true }
-                2 -> { showSystemPromptDialog(); true }
-                3 -> { exportChat(); true }
-                4 -> { selectFileToImport(); true }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Rename Chat")
+            .setView(input)
+            .setPositiveButton("Rename") { _, _ ->
+                val newName = input.text.toString().ifBlank { conv.name }
+                conversationManager.saveConversation(conv.copy(name = newName))
+                updateDrawerConversations()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun deleteConversation(conv: Conversation) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Delete Chat")
+            .setMessage("Delete \"${conv.name}\"?")
+            .setPositiveButton("Delete") { _, _ ->
+                conversationManager.deleteConversation(conv.id)
+                if (currentConversationId == conv.id) {
+                    val remaining = conversationManager.getConversations()
+                    if (remaining.isEmpty()) {
+                        val newConv = conversationManager.createNew("Chat 1")
+                        loadConversation(newConv.id)
+                    } else {
+                        loadConversation(remaining.first().id)
+                    }
+                }
+                updateDrawerConversations()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
                 else -> false
             }
         }
