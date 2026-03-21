@@ -118,7 +118,8 @@ class MainActivity : AppCompatActivity() {
         val text = binding.messageInput.text.toString().trim()
         if (text.isEmpty()) return
         
-        val userMessage = ChatMessage(text, true, imageUri = selectedImageUri)
+        val imageToSend = selectedImageUri
+        val userMessage = ChatMessage(text, true, imageUri = imageToSend)
         chatMessages.add(userMessage)
         chatAdapter.notifyItemInserted(chatMessages.size - 1)
         binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
@@ -126,10 +127,21 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.text?.clear()
         removeImage()
         
+        // Add loading message
+        val loadingMessage = ChatMessage("...", false, isLoading = true)
+        chatMessages.add(loadingMessage)
+        val loadingPosition = chatMessages.size - 1
+        chatAdapter.notifyItemInserted(loadingPosition)
+        binding.chatRecyclerView.scrollToPosition(loadingPosition)
+        
         chatJob = CoroutineScope(Dispatchers.IO).launch {
             try {
-                val response = callChatAPI(text, selectedImageUri)
+                val response = callChatAPI(text, imageToSend)
                 withContext(Dispatchers.Main) {
+                    // Remove loading message
+                    chatMessages.removeAt(loadingPosition)
+                    chatAdapter.notifyItemRemoved(loadingPosition)
+                    
                     val botMessage = ChatMessage(response, false)
                     chatMessages.add(botMessage)
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
@@ -137,6 +149,9 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    // Remove loading message
+                    chatMessages.removeAt(loadingPosition)
+                    chatAdapter.notifyItemRemoved(loadingPosition)
                     Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
@@ -156,13 +171,22 @@ class MainActivity : AppCompatActivity() {
         binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
         
         binding.messageInput.text?.clear()
-        binding.progressBar.visibility = View.VISIBLE
+        
+        // Add loading message
+        val loadingMessage = ChatMessage("Generating image...", false, isLoading = true)
+        chatMessages.add(loadingMessage)
+        val loadingPosition = chatMessages.size - 1
+        chatAdapter.notifyItemInserted(loadingPosition)
+        binding.chatRecyclerView.scrollToPosition(loadingPosition)
         
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val imageUrl = callImageAPI(prompt)
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
+                    // Remove loading message
+                    chatMessages.removeAt(loadingPosition)
+                    chatAdapter.notifyItemRemoved(loadingPosition)
+                    
                     val botMessage = ChatMessage("Generated image:", false, generatedImageUrl = imageUrl)
                     chatMessages.add(botMessage)
                     chatAdapter.notifyItemInserted(chatMessages.size - 1)
@@ -170,7 +194,9 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    binding.progressBar.visibility = View.GONE
+                    // Remove loading message
+                    chatMessages.removeAt(loadingPosition)
+                    chatAdapter.notifyItemRemoved(loadingPosition)
                     Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }

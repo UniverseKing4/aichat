@@ -58,14 +58,21 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
         }
         
         fun bind(message: ChatMessage) {
-            markwon.setMarkdown(binding.messageText, message.text)
-            if (message.generatedImageUrl != null) {
-                binding.generatedImage.visibility = View.VISIBLE
-                Glide.with(binding.root.context)
-                    .load(message.generatedImageUrl)
-                    .into(binding.generatedImage)
-            } else {
+            if (message.isLoading) {
+                binding.messageText.text = "..."
                 binding.generatedImage.visibility = View.GONE
+                binding.loadingIndicator.visibility = View.VISIBLE
+            } else {
+                markwon.setMarkdown(binding.messageText, message.text)
+                binding.loadingIndicator.visibility = View.GONE
+                if (message.generatedImageUrl != null) {
+                    binding.generatedImage.visibility = View.VISIBLE
+                    Glide.with(binding.root.context)
+                        .load(message.generatedImageUrl)
+                        .into(binding.generatedImage)
+                } else {
+                    binding.generatedImage.visibility = View.GONE
+                }
             }
         }
     }

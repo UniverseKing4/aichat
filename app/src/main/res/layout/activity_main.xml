@@ -28,15 +28,6 @@
             android:padding="16dp"
             android:clipToPadding="false" />
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="center"
-            android:layout_marginBottom="8dp"
-            android:visibility="gone"
-            android:indeterminateTint="@color/primary" />
-
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
