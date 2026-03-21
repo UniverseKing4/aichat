@@ -21,10 +21,19 @@
             android:orientation="horizontal">
             
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/modelButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:icon="@drawable/ic_model"
+                app:iconTint="?attr/colorOnSurface"
+                android:contentDescription="Model" />
+            
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/darkModeButton"
                 style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 app:icon="@drawable/ic_dark_mode"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Dark Mode" />
@@ -32,8 +41,8 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/settingsButton"
                 style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 app:icon="@drawable/ic_settings"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Settings" />
@@ -122,7 +131,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         app:icon="@drawable/ic_image"
-                        app:iconTint="@color/accent"
+                        app:iconTint="#9C27B0"
                         android:contentDescription="Generate image" />
 
                     <com.google.android.material.button.MaterialButton

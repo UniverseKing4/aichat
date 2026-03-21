@@ -121,6 +121,7 @@ class MainActivity : AppCompatActivity() {
         binding.attachImageButton.setOnClickListener { checkPermissionAndSelectImage() }
         binding.removeImageButton.setOnClickListener { removeImage() }
         binding.generateImageButton.setOnClickListener { generateImage() }
+        binding.modelButton.setOnClickListener { showModelSelectionDialog() }
         binding.darkModeButton.setOnClickListener { 
             toggleDarkMode()
             updateDarkModeIcon()
@@ -381,10 +382,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_model -> {
-                showModelSelectionDialog()
-                true
-            }
             R.id.action_clear -> {
                 clearChat()
                 true

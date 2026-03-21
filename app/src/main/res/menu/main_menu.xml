@@ -2,11 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_model"
-        android:title="Model"
-        android:icon="@drawable/ic_model"
-        app:showAsAction="ifRoom" />
-    <item
         android:id="@+id/action_clear"
         android:title="Clear Chat"
         android:icon="@drawable/ic_clear"
