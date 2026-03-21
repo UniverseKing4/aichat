@@ -37,7 +37,9 @@
                 android:layout_height="wrap_content"
                 android:textColor="@android:color/white"
                 android:textSize="15sp"
-                android:lineSpacingExtra="2dp" />
+                android:lineSpacingExtra="2dp"
+                android:breakStrategy="high_quality"
+                android:hyphenationFrequency="normal" />
 
         </LinearLayout>
 
