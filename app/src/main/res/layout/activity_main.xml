@@ -12,7 +12,33 @@
         android:background="@color/surface"
         android:elevation="2dp"
         app:title="@string/app_name"
-        app:titleTextColor="@color/text_primary" />
+        app:titleTextColor="@color/text_primary">
+        
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:orientation="horizontal">
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/darkModeButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_dark_mode"
+                android:contentDescription="Dark Mode" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/settingsButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_settings"
+                android:contentDescription="Settings" />
+                
+        </LinearLayout>
+        
+    </com.google.android.material.appbar.MaterialToolbar>
 
     <LinearLayout
         android:layout_width="match_parent"

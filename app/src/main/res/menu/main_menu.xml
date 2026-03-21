@@ -11,14 +11,4 @@
         android:title="Clear Chat"
         android:icon="@drawable/ic_clear"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_dark_mode"
-        android:title="Dark Mode"
-        android:icon="@drawable/ic_dark_mode"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_settings"
-        android:title="@string/settings"
-        android:icon="@drawable/ic_settings"
-        app:showAsAction="ifRoom" />
 </menu>

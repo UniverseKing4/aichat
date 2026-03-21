@@ -84,6 +84,8 @@ class MainActivity : AppCompatActivity() {
         binding.attachImageButton.setOnClickListener { checkPermissionAndSelectImage() }
         binding.removeImageButton.setOnClickListener { removeImage() }
         binding.generateImageButton.setOnClickListener { generateImage() }
+        binding.darkModeButton.setOnClickListener { toggleDarkMode() }
+        binding.settingsButton.setOnClickListener { showApiKeyDialog() }
         
         binding.messageInput.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -128,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         removeImage()
         
         // Add loading message
-        val loadingMessage = ChatMessage("...", false, isLoading = true)
+        val loadingMessage = ChatMessage("", false, isLoading = true)
         chatMessages.add(loadingMessage)
         val loadingPosition = chatMessages.size - 1
         chatAdapter.notifyItemInserted(loadingPosition)
@@ -271,7 +273,6 @@ class MainActivity : AppCompatActivity() {
             put("prompt", prompt)
             put("model", "flux")
             put("size", "1024x1024")
-            put("response_format", "url")
         }
         
         val requestBuilder = Request.Builder()
@@ -284,12 +285,23 @@ class MainActivity : AppCompatActivity() {
         }
         
         client.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) throw Exception("API error: ${response.code}")
+            if (!response.isSuccessful) {
+                val errorBody = response.body?.string()
+                throw Exception("API error ${response.code}: $errorBody")
+            }
             val body = response.body?.string() ?: throw Exception("Empty response")
             val jsonResponse = JSONObject(body)
-            return jsonResponse.getJSONArray("data")
-                .getJSONObject(0)
-                .getString("url")
+            val dataArray = jsonResponse.getJSONArray("data")
+            val firstItem = dataArray.getJSONObject(0)
+            
+            // Try to get URL first, if not available get b64_json
+            return if (firstItem.has("url")) {
+                firstItem.getString("url")
+            } else if (firstItem.has("b64_json")) {
+                "data:image/png;base64,${firstItem.getString("b64_json")}"
+            } else {
+                throw Exception("No image data in response")
+            }
         }
     }
     
@@ -307,7 +319,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        updateThemeIcon(menu)
         return true
     }
 
@@ -317,21 +328,26 @@ class MainActivity : AppCompatActivity() {
                 showModelSelectionDialog()
                 true
             }
-            R.id.action_dark_mode -> {
-                toggleDarkMode()
-                invalidateOptionsMenu()
-                true
-            }
-            R.id.action_settings -> {
-                showApiKeyDialog()
-                true
-            }
             R.id.action_clear -> {
                 clearChat()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    
+    private fun toggleDarkMode() {
+        val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+        val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        
+        prefs.edit().putBoolean("dark_mode", !isDark).apply()
+        
+        val newMode = if (isDark) {
+            AppCompatDelegate.MODE_NIGHT_NO
+        } else {
+            AppCompatDelegate.MODE_NIGHT_YES
+        }
+        AppCompatDelegate.setDefaultNightMode(newMode)
     }
     
     private fun clearChat() {
@@ -344,12 +360,6 @@ class MainActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
-    }
-    
-    private fun updateThemeIcon(menu: Menu) {
-        val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-        val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        menu.findItem(R.id.action_dark_mode)?.setIcon(if (isDark) R.drawable.ic_light_mode else R.drawable.ic_dark_mode)
     }
     
     private fun toggleDarkMode() {

@@ -43,15 +43,23 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_gravity="bottom"
-        android:background="@color/accent"
-        android:gravity="center"
-        android:text="U"
-        android:textColor="@android:color/white"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/accent">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="U"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+            
+    </com.google.android.material.card.MaterialCardView>
 
 </LinearLayout>

@@ -59,10 +59,11 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
         
         fun bind(message: ChatMessage) {
             if (message.isLoading) {
-                binding.messageText.text = "..."
+                binding.messageText.visibility = View.GONE
                 binding.generatedImage.visibility = View.GONE
                 binding.loadingIndicator.visibility = View.VISIBLE
             } else {
+                binding.messageText.visibility = View.VISIBLE
                 markwon.setMarkdown(binding.messageText, message.text)
                 binding.loadingIndicator.visibility = View.GONE
                 if (message.generatedImageUrl != null) {
