@@ -362,20 +362,6 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
-    private fun toggleDarkMode() {
-        val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
-        val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        
-        prefs.edit().putBoolean("dark_mode", !isDark).apply()
-        
-        val newMode = if (isDark) {
-            AppCompatDelegate.MODE_NIGHT_NO
-        } else {
-            AppCompatDelegate.MODE_NIGHT_YES
-        }
-        AppCompatDelegate.setDefaultNightMode(newMode)
-    }
-    
     private fun showApiKeyDialog() {
         val dialogBinding = DialogApiKeyBinding.inflate(layoutInflater)
         val savedKey = prefs.getString("api_key", "") ?: ""
