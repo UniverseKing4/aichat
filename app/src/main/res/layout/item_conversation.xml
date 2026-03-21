@@ -10,7 +10,7 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="0dp"
     app:strokeWidth="0dp"
-    android:backgroundTint="@color/surface_variant">
+    android:backgroundTint="@color/surface">
 
     <TextView
         android:id="@+id/conversationName"
