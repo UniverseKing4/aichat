@@ -21,15 +21,6 @@
             android:orientation="horizontal">
             
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/modelButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                app:icon="@drawable/ic_model"
-                app:iconTint="?attr/colorOnSurface"
-                android:contentDescription="Model" />
-            
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/darkModeButton"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="56dp"
@@ -37,6 +28,15 @@
                 app:icon="@drawable/ic_dark_mode"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Dark Mode" />
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/modelButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:icon="@drawable/ic_model"
+                app:iconTint="?attr/colorOnSurface"
+                android:contentDescription="Model" />
             
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/settingsButton"
