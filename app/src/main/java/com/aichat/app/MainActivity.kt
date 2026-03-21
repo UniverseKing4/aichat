@@ -93,6 +93,13 @@ class MainActivity : AppCompatActivity() {
         setupRecyclerView()
         setupListeners()
         setupDrawer()
+        
+        binding.chatRecyclerView.post {
+            if (chatMessages.isNotEmpty()) {
+                binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            }
+        }
+    }
     }
     
     private fun initConversation() {
@@ -384,8 +391,8 @@ class MainActivity : AppCompatActivity() {
         binding.modelButton.setOnClickListener { showModelSelectionDialog() }
         binding.clearButton.setOnClickListener { clearChat() }
         binding.darkModeButton.setOnClickListener { 
+            saveChatHistory()
             toggleDarkMode()
-            updateDarkModeIcon()
         }
         binding.settingsButton.setOnClickListener { showApiKeyDialog() }
         
@@ -398,6 +405,18 @@ class MainActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+        
+        binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus && chatMessages.isNotEmpty()) {
+                binding.chatRecyclerView.post {
+                    val layoutManager = binding.chatRecyclerView.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
+                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPosition()
+                    if (lastVisible >= chatMessages.size - 2) {
+                        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                    }
+                }
+            }
+        }
         
         updateDarkModeIcon()
     }
@@ -657,6 +676,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         return false
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        saveChatHistory()
+    }
+    
+    override fun onStop() {
+        super.onStop()
+        saveChatHistory()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

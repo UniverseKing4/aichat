@@ -1,5 +1,6 @@
 package com.aichat.app
 
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +16,14 @@ class ConversationAdapter(
     inner class ViewHolder(private val binding: ItemConversationBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(conv: Conversation) {
             binding.conversationName.text = conv.name
-            binding.root.alpha = if (conv.id == currentId) 1.0f else 0.7f
+            binding.conversationName.textSize = 14f
+            if (conv.id == currentId) {
+                binding.conversationName.setTypeface(null, Typeface.BOLD)
+                binding.root.alpha = 1.0f
+            } else {
+                binding.conversationName.setTypeface(null, Typeface.NORMAL)
+                binding.root.alpha = 0.7f
+            }
             binding.root.setOnClickListener { onClick(conv) }
             binding.root.setOnLongClickListener { onLongClick(conv); true }
         }
