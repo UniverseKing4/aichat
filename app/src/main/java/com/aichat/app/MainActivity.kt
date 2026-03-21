@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val API_URL = "https://gen.pollinations.ai/v1/chat/completions"
         private const val IMAGE_URL = "https://gen.pollinations.ai/v1/images/generations"
-        private const val PROXY_URL = "https://aichat-proxy.universeking.workers.dev"
+        private const val PROXY_URL = "https://aivision-proxy.universeking.workers.dev"
     }
     
     private lateinit var binding: ActivityMainBinding
