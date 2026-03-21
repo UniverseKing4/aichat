@@ -73,30 +73,29 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/balanceButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Check Balance"
-            android:fontFamily="sans-serif-medium"
-            style="@style/Widget.Material3.Button.TextButton" />
-
-        <View
             android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Balance"
+            android:fontFamily="sans-serif-medium"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_marginEnd="4dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cancelButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/cancel"
             android:fontFamily="sans-serif-medium"
             style="@style/Widget.Material3.Button.TextButton"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="4dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/saveButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="@string/save"
             android:fontFamily="sans-serif-medium" />
 

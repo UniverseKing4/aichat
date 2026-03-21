@@ -467,19 +467,19 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             dialogBinding.balanceButton.isEnabled = false
-            dialogBinding.balanceButton.text = "Checking..."
+            dialogBinding.balanceButton.text = "..."
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val balance = getApiBalance(key)
                     withContext(Dispatchers.Main) {
                         dialogBinding.balanceButton.isEnabled = true
-                        dialogBinding.balanceButton.text = "Check Balance"
+                        dialogBinding.balanceButton.text = "Balance"
                         Toast.makeText(this@MainActivity, "Balance: $balance", Toast.LENGTH_LONG).show()
                     }
                 } catch (e: Exception) {
                     withContext(Dispatchers.Main) {
                         dialogBinding.balanceButton.isEnabled = true
-                        dialogBinding.balanceButton.text = "Check Balance"
+                        dialogBinding.balanceButton.text = "Balance"
                         Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
