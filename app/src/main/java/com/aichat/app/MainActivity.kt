@@ -100,7 +100,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    }
     
     private fun initConversation() {
         val lastId = prefs.getString("last_conv_id", null)
