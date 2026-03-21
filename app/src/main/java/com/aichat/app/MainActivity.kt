@@ -74,12 +74,35 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupRecyclerView() {
         chatAdapter = ChatAdapter(chatMessages)
+        chatAdapter.onEditClick = { position, currentText ->
+            showEditDialog(position, currentText)
+        }
         binding.chatRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = chatAdapter
         }
         loadChatHistory()
         updateEmptyState()
+    }
+    
+    private fun showEditDialog(position: Int, currentText: String) {
+        val input = android.widget.EditText(this)
+        input.setText(currentText)
+        input.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Edit Message")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val newText = input.text.toString()
+                if (newText.isNotBlank()) {
+                    chatMessages[position] = chatMessages[position].copy(text = newText)
+                    chatAdapter.notifyItemChanged(position)
+                    saveChatHistory()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
     
     private fun updateEmptyState() {
