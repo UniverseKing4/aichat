@@ -61,3 +61,5 @@ jobs:
           name: AI Chat v${{ steps.version.outputs.number }}
           body: "Automated release v${{ steps.version.outputs.number }}"
           draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
