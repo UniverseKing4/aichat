@@ -35,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val API_URL = "https://gen.pollinations.ai/v1/chat/completions"
         private const val IMAGE_URL = "https://gen.pollinations.ai/v1/images/generations"
+        private const val PROXY_URL = "https://aichat-proxy.universeking.workers.dev"
     }
     
     private lateinit var binding: ActivityMainBinding
@@ -311,7 +312,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         val requestBuilder = Request.Builder()
-            .url(API_URL)
+            .url(if (apiKey.isEmpty()) PROXY_URL else API_URL)
             .addHeader("Content-Type", "application/json")
             .post(json.toString().toRequestBody("application/json".toMediaType()))
         
