@@ -118,12 +118,15 @@ class MainActivity : AppCompatActivity() {
             binding.drawerLayout.open()
         }
         
-        val drawerContent = binding.navigationView.getChildAt(0)
-        val btnNewChat = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNewChat)
-        val btnSystemPrompt = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSystemPrompt)
-        val btnExport = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExport)
-        val btnImport = drawerContent.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImport)
-        val conversationsRv = drawerContent.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
+        val drawerView = layoutInflater.inflate(R.layout.drawer_content, binding.navigationView, false)
+        binding.navigationView.removeAllViews()
+        binding.navigationView.addView(drawerView)
+        
+        val btnNewChat = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNewChat)
+        val btnSystemPrompt = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSystemPrompt)
+        val btnExport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExport)
+        val btnImport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImport)
+        val conversationsRv = drawerView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         btnNewChat.setOnClickListener { createNewChat() }
         btnSystemPrompt.setOnClickListener { showSystemPromptDialog() }
@@ -135,11 +138,10 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun updateDrawerConversations() {
-        val drawerContent = binding.navigationView.getChildAt(0)
-        val conversationsRv = drawerContent.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
+        val conversationsRv = binding.navigationView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         val convs = conversationManager.getConversations()
-        conversationsRv.adapter = ConversationAdapter(
+        conversationsRv?.adapter = ConversationAdapter(
             conversations = convs,
             currentId = currentConversationId,
             onClick = { conv -> loadConversation(conv.id) },
