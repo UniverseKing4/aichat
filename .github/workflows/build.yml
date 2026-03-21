@@ -1,0 +1,62 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      
+      - name: Get and increment version
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "number=$VERSION" >> $GITHUB_OUTPUT
+          else
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            VERSION=${LATEST_TAG#v}
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "number=$NEW_VERSION" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Build APK
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK
+        run: |
+          cd app/build/outputs/apk/release
+          APK_FILE=$(ls app-release*.apk | head -1)
+          mv "$APK_FILE" AIChat-v${{ steps.version.outputs.number }}.apk
+        
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: app/build/outputs/apk/release/AIChat-*.apk
+
+      - uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+        with:
+          files: app/build/outputs/apk/release/AIChat-*.apk
+          tag_name: v${{ steps.version.outputs.number }}
+          name: AI Chat v${{ steps.version.outputs.number }}
+          body: "Automated release v${{ steps.version.outputs.number }}"
+          draft: false
