@@ -251,6 +251,7 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun loadChatHistory() {
+        chatMessages.clear()
         val savedMessages = conversationManager.getMessages(currentConversationId)
         if (savedMessages != null) {
             try {
@@ -268,6 +269,7 @@ class MainActivity : AppCompatActivity() {
                 chatAdapter.notifyDataSetChanged()
             } catch (e: Exception) {}
         }
+        updateEmptyState()
     }
     
     private fun saveChatHistory() {
@@ -294,6 +296,7 @@ class MainActivity : AppCompatActivity() {
         loadChatHistory()
         chatAdapter.notifyDataSetChanged()
         updateEmptyState()
+        updateDrawerConversations()
         binding.drawerLayout.close()
         
         val conv = conversationManager.getConversations().find { it.id == convId }
@@ -505,44 +508,61 @@ class MainActivity : AppCompatActivity() {
         
         binding.sendButton.isEnabled = false
         
-        val userMessage = ChatMessage("🎨 Generate: $prompt", true)
-        chatMessages.add(userMessage)
-        chatAdapter.notifyItemInserted(chatMessages.size - 1)
-        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-        
-        binding.messageInput.text?.clear()
-        
-        // Add loading message
-        val loadingMessage = ChatMessage("Generating image...", false, isLoading = true)
-        chatMessages.add(loadingMessage)
-        val loadingPosition = chatMessages.size - 1
-        chatAdapter.notifyItemInserted(loadingPosition)
-        binding.chatRecyclerView.scrollToPosition(loadingPosition)
-        
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val imageUrl = callImageAPI(prompt)
-                withContext(Dispatchers.Main) {
-                    // Remove loading message
-                    chatMessages.removeAt(loadingPosition)
-                    chatAdapter.notifyItemRemoved(loadingPosition)
-                    
-                    val botMessage = ChatMessage("Generated image:", false, generatedImageUrl = imageUrl)
-                    chatMessages.add(botMessage)
-                    chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-                    saveChatHistory()
-                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    // Remove loading message
-                    chatMessages.removeAt(loadingPosition)
-                    chatAdapter.notifyItemRemoved(loadingPosition)
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+        try {
+            val userMessage = ChatMessage("🎨 Generate: $prompt", true)
+            chatMessages.add(userMessage)
+            chatAdapter.notifyItemInserted(chatMessages.size - 1)
+            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            
+            binding.messageInput.text?.clear()
+            
+            // Add loading message
+            val loadingMessage = ChatMessage("Generating image...", false, isLoading = true)
+            chatMessages.add(loadingMessage)
+            val loadingPosition = chatMessages.size - 1
+            chatAdapter.notifyItemInserted(loadingPosition)
+            binding.chatRecyclerView.scrollToPosition(loadingPosition)
+            
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val imageUrl = callImageAPI(prompt)
+                    withContext(Dispatchers.Main) {
+                        try {
+                            // Remove loading message
+                            if (loadingPosition < chatMessages.size && chatMessages[loadingPosition].isLoading) {
+                                chatMessages.removeAt(loadingPosition)
+                                chatAdapter.notifyItemRemoved(loadingPosition)
+                            }
+                            
+                            val botMessage = ChatMessage("Generated image:", false, generatedImageUrl = imageUrl)
+                            chatMessages.add(botMessage)
+                            chatAdapter.notifyItemInserted(chatMessages.size - 1)
+                            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                            saveChatHistory()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            // Remove loading message
+                            if (loadingPosition < chatMessages.size && chatMessages[loadingPosition].isLoading) {
+                                chatMessages.removeAt(loadingPosition)
+                                chatAdapter.notifyItemRemoved(loadingPosition)
+                            }
+                            Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
         }
     }
     
@@ -632,7 +652,7 @@ class MainActivity : AppCompatActivity() {
         }
         
         val requestBuilder = Request.Builder()
-            .url(IMAGE_URL)
+            .url(if (apiKey.isEmpty()) PROXY_URL else IMAGE_URL)
             .addHeader("Content-Type", "application/json")
             .post(json.toString().toRequestBody("application/json".toMediaType()))
         
