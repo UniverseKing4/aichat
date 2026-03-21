@@ -26,6 +26,7 @@ jobs:
       - name: Get and increment version
         id: version
         run: |
+          git fetch --tags
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "number=$VERSION" >> $GITHUB_OUTPUT
