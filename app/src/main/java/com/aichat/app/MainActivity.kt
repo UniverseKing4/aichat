@@ -122,6 +122,7 @@ class MainActivity : AppCompatActivity() {
         binding.removeImageButton.setOnClickListener { removeImage() }
         binding.generateImageButton.setOnClickListener { generateImage() }
         binding.modelButton.setOnClickListener { showModelSelectionDialog() }
+        binding.clearButton.setOnClickListener { clearChat() }
         binding.darkModeButton.setOnClickListener { 
             toggleDarkMode()
             updateDarkModeIcon()
@@ -376,18 +377,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return true
+        return false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.action_clear -> {
-                clearChat()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        return super.onOptionsItemSelected(item)
     }
     
     private fun toggleDarkMode() {

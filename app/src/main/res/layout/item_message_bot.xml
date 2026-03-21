@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="12dp"
-            android:maxWidth="280dp">
+            android:maxWidth="260dp">
 
             <ProgressBar
                 android:id="@+id/loadingIndicator"
@@ -58,8 +58,7 @@
                 android:textColor="@color/text_primary"
                 android:textSize="15sp"
                 android:lineSpacingExtra="2dp"
-                android:textIsSelectable="true"
-                android:breakStrategy="balanced" />
+                android:textIsSelectable="true" />
 
             <ImageView
                 android:id="@+id/generatedImage"

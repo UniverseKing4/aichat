@@ -23,8 +23,8 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/darkModeButton"
                 style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 app:icon="@drawable/ic_dark_mode"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Dark Mode" />
@@ -32,17 +32,26 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/modelButton"
                 style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 app:icon="@drawable/ic_model"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Model" />
             
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/clearButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_clear"
+                app:iconTint="?attr/colorOnSurface"
+                android:contentDescription="Clear Chat" />
+            
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/settingsButton"
                 style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 app:icon="@drawable/ic_settings"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Settings" />
