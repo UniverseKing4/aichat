@@ -26,12 +26,15 @@ jobs:
       - name: Get and increment version
         id: version
         run: |
-          git fetch --tags
+          git fetch --tags --force
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             VERSION=${GITHUB_REF#refs/tags/v}
             echo "number=$VERSION" >> $GITHUB_OUTPUT
           else
-            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            LATEST_TAG=$(git tag --sort=-v:refname | head -n1)
+            if [ -z "$LATEST_TAG" ]; then
+              LATEST_TAG="v0.0.0"
+            fi
             echo "Latest tag: $LATEST_TAG"
             VERSION=${LATEST_TAG#v}
             echo "Version: $VERSION"
