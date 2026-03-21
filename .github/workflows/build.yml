@@ -32,10 +32,14 @@ jobs:
             echo "number=$VERSION" >> $GITHUB_OUTPUT
           else
             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+            echo "Latest tag: $LATEST_TAG"
             VERSION=${LATEST_TAG#v}
+            echo "Version: $VERSION"
             IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+            echo "MAJOR=$MAJOR MINOR=$MINOR PATCH=$PATCH"
             PATCH=$((PATCH + 1))
             NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "New version: $NEW_VERSION"
             echo "number=$NEW_VERSION" >> $GITHUB_OUTPUT
           fi
           
