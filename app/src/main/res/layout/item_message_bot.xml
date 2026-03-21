@@ -71,15 +71,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/copyButton"
-                style="@style/Widget.Material3.Button.TextButton.Icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
                 android:layout_gravity="end"
                 android:layout_marginTop="4dp"
-                android:text="Copy"
                 app:icon="@drawable/ic_copy"
                 app:iconSize="16dp"
-                android:textSize="12sp" />
+                android:contentDescription="Copy" />
 
         </LinearLayout>
 
