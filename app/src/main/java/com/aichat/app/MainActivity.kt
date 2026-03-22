@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityMainBinding
     private val prefs by lazy { getSharedPreferences("app_prefs", MODE_PRIVATE) }
+    private val scrollPrefs by lazy { getSharedPreferences("scroll_positions", MODE_PRIVATE) }
     private val chatMessages = mutableListOf<ChatMessage>()
     private lateinit var chatAdapter: ChatAdapter
     private var chatJob: Job? = null
@@ -450,6 +451,16 @@ class MainActivity : AppCompatActivity() {
         try {
             chatJob?.cancel()
             chatJob = null
+            
+            // Save current scroll position
+            val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+            val scrollPosition = layoutManager?.findFirstVisibleItemPosition() ?: 0
+            val scrollOffset = layoutManager?.findViewByPosition(scrollPosition)?.top ?: 0
+            scrollPrefs.edit()
+                .putInt("pos_$currentConversationId", scrollPosition)
+                .putInt("offset_$currentConversationId", scrollOffset)
+                .apply()
+            
             saveChatHistory()
             currentConversationId = convId
             prefs.edit().putString("last_conv_id", convId).apply()
@@ -462,6 +473,15 @@ class MainActivity : AppCompatActivity() {
             
             val conv = conversationManager.getConversations().find { it.id == convId }
             systemPrompt = conv?.systemPrompt ?: ""
+            
+            // Restore scroll position
+            val savedPosition = scrollPrefs.getInt("pos_$convId", -1)
+            val savedOffset = scrollPrefs.getInt("offset_$convId", 0)
+            if (savedPosition >= 0 && savedPosition < chatMessages.size) {
+                binding.chatRecyclerView.post {
+                    layoutManager?.scrollToPositionWithOffset(savedPosition, savedOffset)
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Error loading conversation", Toast.LENGTH_SHORT).show()
@@ -996,6 +1016,13 @@ class MainActivity : AppCompatActivity() {
     
     override fun onPause() {
         super.onPause()
+        val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+        val scrollPosition = layoutManager?.findFirstVisibleItemPosition() ?: 0
+        val scrollOffset = layoutManager?.findViewByPosition(scrollPosition)?.top ?: 0
+        scrollPrefs.edit()
+            .putInt("pos_$currentConversationId", scrollPosition)
+            .putInt("offset_$currentConversationId", scrollOffset)
+            .apply()
         saveChatHistory()
     }
     
