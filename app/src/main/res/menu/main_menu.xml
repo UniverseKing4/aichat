@@ -3,6 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     
     <item
+        android:id="@+id/menu_delete_conversation"
+        android:title="Delete Conversation"
+        app:showAsAction="never" />
+    
+    <item
         android:id="@+id/menu_system_prompt"
         android:title="System Instructions"
         app:showAsAction="never" />
@@ -10,11 +15,6 @@
     <item
         android:id="@+id/menu_api_key"
         android:title="API Key Settings"
-        app:showAsAction="never" />
-    
-    <item
-        android:id="@+id/menu_delete_conversation"
-        android:title="Delete Conversation"
         app:showAsAction="never" />
     
 </menu>

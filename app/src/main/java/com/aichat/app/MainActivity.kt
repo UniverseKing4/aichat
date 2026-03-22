@@ -502,9 +502,15 @@ class MainActivity : AppCompatActivity() {
     
     private fun exportChatToUri(uri: Uri) {
         try {
-            val json = conversationManager.getMessages(currentConversationId) ?: "[]"
+            val conv = conversationManager.getConversations().find { it.id == currentConversationId }
+            val messages = conversationManager.getMessages(currentConversationId) ?: "[]"
+            val exportData = JSONObject().apply {
+                put("name", conv?.name ?: "Imported Chat")
+                put("systemPrompt", conv?.systemPrompt ?: "")
+                put("messages", JSONArray(messages))
+            }
             contentResolver.openOutputStream(uri)?.use { output ->
-                output.write(json.toByteArray())
+                output.write(exportData.toString().toByteArray())
             }
             Toast.makeText(this, "Exported successfully", Toast.LENGTH_SHORT).show()
             binding.drawerLayout.close()
@@ -524,11 +530,23 @@ class MainActivity : AppCompatActivity() {
     private fun importChat(uri: Uri) {
         try {
             val json = contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return
-            conversationManager.saveMessages(currentConversationId, json)
-            loadConversation(currentConversationId)
+            val data = JSONObject(json)
+            val name = data.optString("name", "Imported Chat")
+            val systemPrompt = data.optString("systemPrompt", "")
+            val messages = data.optJSONArray("messages")?.toString() ?: json
+            
+            val newConv = conversationManager.createNew(name)
+            if (systemPrompt.isNotEmpty()) {
+                val updatedConv = newConv.copy(systemPrompt = systemPrompt)
+                conversationManager.saveConversation(updatedConv)
+            }
+            conversationManager.saveMessages(newConv.id, messages)
+            loadConversation(newConv.id)
+            updateDrawerConversations()
             Toast.makeText(this, "Imported successfully", Toast.LENGTH_SHORT).show()
             binding.drawerLayout.close()
         } catch (e: Exception) {
+            e.printStackTrace()
             Toast.makeText(this, "Import failed", Toast.LENGTH_SHORT).show()
         }
     }
