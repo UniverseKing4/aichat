@@ -153,12 +153,24 @@ class MainActivity : AppCompatActivity() {
         val conversationsRv = binding.navigationView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         val convs = conversationManager.getConversations()
+        
+        // Preserve selection state if adapter exists
+        val wasInSelectionMode = conversationAdapter?.isSelectionMode ?: false
+        val previousSelections = conversationAdapter?.selectedItems?.toSet() ?: emptySet()
+        
         conversationAdapter = ConversationAdapter(
             conversations = convs,
             currentId = currentConversationId,
             onClick = { conv -> loadConversation(conv.id) },
             onLongClick = { conv -> showConversationOptions(conv) }
         )
+        
+        // Restore selection state
+        if (wasInSelectionMode) {
+            conversationAdapter?.isSelectionMode = true
+            conversationAdapter?.selectedItems?.addAll(previousSelections)
+        }
+        
         conversationsRv?.adapter = conversationAdapter
     }
     
@@ -169,14 +181,15 @@ class MainActivity : AppCompatActivity() {
                 when (which) {
                     0 -> renameConversation(conv)
                     1 -> deleteConversation(conv)
-                    2 -> enterSelectionMode()
+                    2 -> enterSelectionMode(conv.id)
                 }
             }
             .show()
     }
     
-    private fun enterSelectionMode() {
+    private fun enterSelectionMode(initialId: String) {
         conversationAdapter?.isSelectionMode = true
+        conversationAdapter?.selectedItems?.add(initialId)
         conversationAdapter?.notifyDataSetChanged()
         
         val drawerView = binding.navigationView.getChildAt(0)
