@@ -128,6 +128,33 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun setupDrawer() {
+        binding.drawerLayout.setScrimColor(android.graphics.Color.parseColor("#80000000"))
+        binding.drawerLayout.drawerElevation = 0f
+        
+        try {
+            val draggerField = binding.drawerLayout.javaClass.getDeclaredField("mLeftDragger")
+            draggerField.isAccessible = true
+            val dragger = draggerField.get(binding.drawerLayout) as androidx.customview.widget.ViewDragHelper
+            val edgeSizeField = dragger.javaClass.getDeclaredField("mEdgeSize")
+            edgeSizeField.isAccessible = true
+            val edgeSize = edgeSizeField.getInt(dragger)
+            edgeSizeField.setInt(dragger, edgeSize * 3)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        
+        binding.drawerLayout.addDrawerListener(object : androidx.drawerlayout.widget.DrawerLayout.DrawerListener {
+            override fun onDrawerSlide(drawerView: android.view.View, slideOffset: Float) {}
+            override fun onDrawerOpened(drawerView: android.view.View) {}
+            override fun onDrawerClosed(drawerView: android.view.View) {}
+            override fun onDrawerStateChanged(newState: Int) {
+                if (newState == androidx.drawerlayout.widget.DrawerLayout.STATE_DRAGGING) {
+                    val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                    imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+                }
+            }
+        })
+        
         binding.toolbar.setNavigationOnClickListener {
             val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
             imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
