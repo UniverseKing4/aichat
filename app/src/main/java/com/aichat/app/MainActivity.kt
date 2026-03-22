@@ -97,16 +97,14 @@ class MainActivity : AppCompatActivity() {
         setupListeners()
         setupDrawer()
         
-        binding.chatRecyclerView.post {
-            if (chatMessages.isNotEmpty()) {
-                binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
-            }
-        }
-        
         wasAtBottom = prefs.getBoolean("was_at_bottom", true)
         if (wasAtBottom && chatMessages.isNotEmpty()) {
             binding.chatRecyclerView.post {
-                binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+                layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
+                binding.chatRecyclerView.postDelayed({
+                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                }, 100)
             }
         }
     }
@@ -584,12 +582,10 @@ class MainActivity : AppCompatActivity() {
         
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
-                val canScrollDown = binding.chatRecyclerView.canScrollVertically(1)
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                 val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
-                val isNearBottom = lastVisible >= chatMessages.size - 2
                 
-                if (!canScrollDown || isNearBottom) {
+                if (lastVisible >= chatMessages.size - 2) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
@@ -604,12 +600,10 @@ class MainActivity : AppCompatActivity() {
         binding.root.viewTreeObserver.addOnGlobalLayoutListener {
             val currentHeight = binding.root.height
             if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
-                val canScrollDown = binding.chatRecyclerView.canScrollVertically(1)
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                 val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
-                val isNearBottom = lastVisible >= chatMessages.size - 2
                 
-                if (!canScrollDown || isNearBottom) {
+                if (lastVisible >= chatMessages.size - 2) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
