@@ -337,6 +337,18 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
     
+    private fun createNewChatQuick() {
+        try {
+            val name = "Chat ${conversationManager.getConversations().size + 1}"
+            val conv = conversationManager.createNew(name)
+            loadConversation(conv.id)
+            updateDrawerConversations()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error creating chat", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
     private fun showSystemPromptDialog() {
         val input = android.widget.EditText(this).apply {
             setText(systemPrompt)
@@ -407,6 +419,7 @@ class MainActivity : AppCompatActivity() {
         binding.removeImageButton.setOnClickListener { removeImage() }
         binding.generateImageButton.setOnClickListener { generateImage() }
         binding.modelButton.setOnClickListener { showModelSelectionDialog() }
+        binding.newChatButton.setOnClickListener { createNewChatQuick() }
         binding.clearButton.setOnClickListener { clearChat() }
         binding.darkModeButton.setOnClickListener { 
             saveChatHistory()

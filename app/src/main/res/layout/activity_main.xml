@@ -45,6 +45,15 @@
                 android:contentDescription="Model" />
             
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/newChatButton"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_add"
+                app:iconTint="?attr/colorOnSurface"
+                android:contentDescription="New Chat" />
+            
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/clearButton"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:layout_width="48dp"
