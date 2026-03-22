@@ -300,12 +300,35 @@ class MainActivity : AppCompatActivity() {
         chatAdapter.onEditClick = { position, currentText ->
             showEditDialog(position, currentText)
         }
+        chatAdapter.onDeleteClick = { position ->
+            deleteMessage(position)
+        }
         binding.chatRecyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = chatAdapter
         }
         loadChatHistory()
         updateEmptyState()
+    }
+    
+    private fun deleteMessage(position: Int) {
+        try {
+            if (position >= 0 && position < chatMessages.size) {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Delete Message")
+                    .setMessage("Delete this message?")
+                    .setPositiveButton("Delete") { _, _ ->
+                        chatMessages.removeAt(position)
+                        chatAdapter.notifyItemRemoved(position)
+                        saveChatHistory()
+                        updateEmptyState()
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
     
     private fun showEditDialog(position: Int, currentText: String) {

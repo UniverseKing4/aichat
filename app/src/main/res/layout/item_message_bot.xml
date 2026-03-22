@@ -77,6 +77,15 @@
                 android:layout_marginTop="4dp">
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/deleteButton"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    app:icon="@drawable/ic_delete"
+                    app:iconSize="16dp"
+                    android:contentDescription="Delete" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/editButton"
                     style="@style/Widget.Material3.Button.IconButton"
                     android:layout_width="32dp"

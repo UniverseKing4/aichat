@@ -16,6 +16,7 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
     }
     
     var onEditClick: ((Int, String) -> Unit)? = null
+    var onDeleteClick: ((Int) -> Unit)? = null
     
     override fun getItemViewType(position: Int) = if (messages[position].isUser) VIEW_TYPE_USER else VIEW_TYPE_BOT
     
@@ -48,6 +49,10 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 binding.attachedImage.setImageURI(message.imageUri)
             } else {
                 binding.attachedImage.visibility = View.GONE
+            }
+            
+            binding.deleteButton.setOnClickListener {
+                onDeleteClick?.invoke(position)
             }
             
             binding.editButton.setOnClickListener {
@@ -91,6 +96,10 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 } else {
                     binding.generatedImage.visibility = View.GONE
                 }
+            }
+            
+            binding.deleteButton.setOnClickListener {
+                onDeleteClick?.invoke(position)
             }
             
             binding.editButton.setOnClickListener {
