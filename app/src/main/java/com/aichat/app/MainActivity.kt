@@ -585,9 +585,12 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
                 val canScrollDown = binding.chatRecyclerView.canScrollVertically(1)
-                if (!canScrollDown) {
+                val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+                val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
+                val isNearBottom = lastVisible >= chatMessages.size - 2
+                
+                if (!canScrollDown || isNearBottom) {
                     binding.chatRecyclerView.postDelayed({
-                        val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
                             binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
@@ -602,9 +605,12 @@ class MainActivity : AppCompatActivity() {
             val currentHeight = binding.root.height
             if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
                 val canScrollDown = binding.chatRecyclerView.canScrollVertically(1)
-                if (!canScrollDown) {
+                val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+                val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
+                val isNearBottom = lastVisible >= chatMessages.size - 2
+                
+                if (!canScrollDown || isNearBottom) {
                     binding.chatRecyclerView.postDelayed({
-                        val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
                             binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
