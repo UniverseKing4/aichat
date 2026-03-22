@@ -129,13 +129,11 @@ class MainActivity : AppCompatActivity() {
         binding.navigationView.addView(drawerView)
         
         val btnNewChat = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNewChat)
-        val btnSystemPrompt = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSystemPrompt)
         val btnExport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExport)
         val btnImport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImport)
         val conversationsRv = drawerView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         btnNewChat.setOnClickListener { createNewChat() }
-        btnSystemPrompt.setOnClickListener { showSystemPromptDialog() }
         btnExport.setOnClickListener { exportChat() }
         btnImport.setOnClickListener { selectFileToImport() }
         
@@ -339,6 +337,12 @@ class MainActivity : AppCompatActivity() {
     
     private fun createNewChatQuick() {
         try {
+            // Don't create new chat if current chat is empty
+            if (chatMessages.isEmpty()) {
+                Toast.makeText(this, "Current chat is empty", Toast.LENGTH_SHORT).show()
+                return
+            }
+            
             val name = "Chat ${conversationManager.getConversations().size + 1}"
             val conv = conversationManager.createNew(name)
             loadConversation(conv.id)
@@ -425,7 +429,6 @@ class MainActivity : AppCompatActivity() {
             saveChatHistory()
             toggleDarkMode()
         }
-        binding.settingsButton.setOnClickListener { showApiKeyDialog() }
         
         binding.messageInput.addTextChangedListener(object : android.text.TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -747,7 +750,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        return false
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+    
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_system_prompt -> {
+                showSystemPromptDialog()
+                true
+            }
+            R.id.menu_api_key -> {
+                showApiKeyDialog()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
     
     override fun onPause() {

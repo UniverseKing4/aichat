@@ -61,15 +61,6 @@
                 app:icon="@drawable/ic_clear"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Clear Chat" />
-            
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/settingsButton"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:icon="@drawable/ic_settings"
-                app:iconTint="?attr/colorOnSurface"
-                android:contentDescription="Settings" />
                 
         </LinearLayout>
         
