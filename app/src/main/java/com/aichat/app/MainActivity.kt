@@ -585,7 +585,11 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.postDelayed({
-                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                    val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+                    layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
+                    binding.chatRecyclerView.postDelayed({
+                        binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                    }, 100)
                 }, 300)
             }
         }
@@ -595,7 +599,11 @@ class MainActivity : AppCompatActivity() {
             val currentHeight = binding.root.height
             if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.postDelayed({
-                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                    val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+                    layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
+                    binding.chatRecyclerView.postDelayed({
+                        binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                    }, 100)
                 }, 50)
             }
             previousHeight = currentHeight
