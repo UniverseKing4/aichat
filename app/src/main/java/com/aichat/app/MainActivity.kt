@@ -314,14 +314,25 @@ class MainActivity : AppCompatActivity() {
     private fun deleteMessage(position: Int) {
         try {
             if (position >= 0 && position < chatMessages.size) {
+                val messageToDelete = chatMessages.getOrNull(position) ?: return
                 MaterialAlertDialogBuilder(this)
                     .setTitle("Delete Message")
                     .setMessage("Delete this message?")
                     .setPositiveButton("Delete") { _, _ ->
-                        chatMessages.removeAt(position)
-                        chatAdapter.notifyItemRemoved(position)
-                        saveChatHistory()
-                        updateEmptyState()
+                        try {
+                            val currentPos = chatMessages.indexOf(messageToDelete)
+                            if (currentPos >= 0 && currentPos < chatMessages.size) {
+                                chatMessages.removeAt(currentPos)
+                                chatAdapter.notifyItemRemoved(currentPos)
+                                if (currentPos < chatMessages.size) {
+                                    chatAdapter.notifyItemRangeChanged(currentPos, chatMessages.size - currentPos)
+                                }
+                                saveChatHistory()
+                                updateEmptyState()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                     .setNegativeButton("Cancel", null)
                     .show()
@@ -868,8 +879,42 @@ class MainActivity : AppCompatActivity() {
                 showApiKeyDialog()
                 true
             }
+            R.id.menu_delete_conversation -> {
+                deleteCurrentConversation()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    
+    private fun deleteCurrentConversation() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Delete Conversation")
+            .setMessage("Delete this conversation? This cannot be undone.")
+            .setPositiveButton("Delete") { _, _ ->
+                try {
+                    chatJob?.cancel()
+                    chatJob = null
+                    conversationManager.deleteConversation(currentConversationId)
+                    val conversations = conversationManager.getConversations()
+                    if (conversations.isNotEmpty()) {
+                        switchToConversation(conversations[0].id)
+                    } else {
+                        val newConv = conversationManager.createNewConversation()
+                        currentConversationId = newConv.id
+                        systemPrompt = newConv.systemPrompt
+                        chatMessages.clear()
+                        chatAdapter.notifyDataSetChanged()
+                        updateEmptyState()
+                    }
+                    updateConversationsList()
+                    binding.drawerLayout.closeDrawer(GravityCompat.START)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
     
     override fun onPause() {

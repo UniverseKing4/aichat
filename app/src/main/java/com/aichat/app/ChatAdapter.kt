@@ -33,16 +33,16 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = messages[position]
         if (holder is UserViewHolder) {
-            holder.bind(message, position, onEditClick, onDeleteClick)
+            holder.bind(message, onEditClick, onDeleteClick)
         } else if (holder is BotViewHolder) {
-            holder.bind(message, position, onEditClick, onDeleteClick)
+            holder.bind(message, onEditClick, onDeleteClick)
         }
     }
     
     override fun getItemCount() = messages.size
     
     class UserViewHolder(private val binding: ItemMessageUserBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
+        fun bind(message: ChatMessage, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
             binding.messageText.text = message.text
             if (message.imageUri != null) {
                 binding.attachedImage.visibility = View.VISIBLE
@@ -52,11 +52,17 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
             }
             
             binding.deleteButton.setOnClickListener {
-                onDeleteClick?.invoke(position)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onDeleteClick?.invoke(pos)
+                }
             }
             
             binding.editButton.setOnClickListener {
-                onEditClick?.invoke(position, message.text)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onEditClick?.invoke(pos, message.text)
+                }
             }
             
             binding.copyButton.setOnClickListener {
@@ -75,7 +81,7 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 .build()
         }
         
-        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
+        fun bind(message: ChatMessage, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
             if (message.isLoading) {
                 binding.messageText.visibility = View.GONE
                 binding.generatedImage.visibility = View.GONE
@@ -101,11 +107,17 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
             }
             
             binding.deleteButton.setOnClickListener {
-                onDeleteClick?.invoke(position)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onDeleteClick?.invoke(pos)
+                }
             }
             
             binding.editButton.setOnClickListener {
-                onEditClick?.invoke(position, message.text)
+                val pos = bindingAdapterPosition
+                if (pos != RecyclerView.NO_POSITION) {
+                    onEditClick?.invoke(pos, message.text)
+                }
             }
             
             binding.copyButton.setOnClickListener {
