@@ -33,6 +33,11 @@ class ConversationAdapter(
             binding.conversationCheckbox.visibility = if (isSelectionMode) View.VISIBLE else View.GONE
             binding.conversationCheckbox.isChecked = selectedItems.contains(conv.id)
             
+            binding.conversationCheckbox.setOnClickListener {
+                toggleSelection(conv.id)
+                notifyItemChanged(adapterPosition)
+            }
+            
             binding.root.setOnClickListener {
                 if (isSelectionMode) {
                     toggleSelection(conv.id)
