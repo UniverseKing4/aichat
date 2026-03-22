@@ -82,7 +82,7 @@
                 app:iconPadding="0dp"
                 app:iconGravity="textStart"
                 app:icon="@drawable/ic_clear"
-                app:iconSize="28dp"
+                app:iconSize="26dp"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Clear Chat" />
                 
