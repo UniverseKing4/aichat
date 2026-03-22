@@ -992,18 +992,45 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun showModelSelectionDialog() {
-        val models = arrayOf(
-            "openai", "openai-fast", "qwen-coder", "mistral", "gemini-fast", 
-            "deepseek", "claude-fast", "kimi", "nova-fast", "glm", "minimax", "polly"
+        val modelIds = arrayOf(
+            "openai", "openai-fast", "qwen-coder", "mistral", "openai-audio", "gemini-fast", 
+            "deepseek", "gemini-search", "midijourney", "claude-fast", "perplexity-fast", 
+            "perplexity-reasoning", "kimi", "nova-fast", "glm", "minimax", "nomnom", "polly", 
+            "qwen-safety", "step-3.5-flash", "qwen-character", "claude-airforce", "openai-seraphyn"
+        )
+        val modelNames = arrayOf(
+            "OpenAI GPT-5 Mini - Fast & Balanced",
+            "OpenAI GPT-5 Nano - Ultra Fast & Affordable",
+            "Qwen3 Coder 30B - Specialized for Code Generation",
+            "Mistral Small 3.2 24B - Efficient & Cost-Effective",
+            "OpenAI GPT-4o Mini Audio - Voice Input & Output",
+            "Google Gemini 2.5 Flash Lite - Ultra Fast & Cost-Effective",
+            "DeepSeek V3.2 - Efficient Reasoning & Agentic AI",
+            "Google Gemini 2.5 Flash Lite - With Google Search",
+            "MIDIjourney - AI Music Composition Assistant",
+            "Anthropic Claude Haiku 4.5 - Fast & Intelligent",
+            "Perplexity Sonar - Fast & Affordable with Web Search",
+            "Perplexity Sonar Reasoning - Advanced Reasoning with Web Search",
+            "Moonshot Kimi K2.5 - Flagship Agentic Model with Vision & Multi-Agent",
+            "Amazon Nova Micro - Ultra Fast & Ultra Cheap",
+            "Z.ai GLM-5 - 744B MoE, Long Context Reasoning & Agentic Workflows",
+            "MiniMax M2.5 - Coding, Agentic & Multi-Language",
+            "NomNom by @Itachi-1824 - Web Research with Search, Scrape & Crawl (Alpha)",
+            "Polly by @Itachi-1824 - Pollinations AI Assistant with GitHub, Code Search & Web Tools (Alpha)",
+            "Qwen3Guard 8B - Content Safety & Moderation (OVH)",
+            "Step 3.5 Flash (api.airforce) - Fast reasoning model",
+            "Qwen Character (api.airforce) - roleplay & character chat",
+            "Claude Sonnet 4.6 (api.airforce) - Anthropic's balanced model via community provider",
+            "GPT-5.4 (seraphyn.ai) - OpenAI's latest model via community provider"
         )
         val currentModel = prefs.getString("model", "openai")
-        val selectedIndex = models.indexOf(currentModel)
+        val selectedIndex = modelIds.indexOf(currentModel)
         
         MaterialAlertDialogBuilder(this)
             .setTitle("Select Model")
-            .setSingleChoiceItems(models, selectedIndex) { dialog, which ->
-                prefs.edit().putString("model", models[which]).apply()
-                Toast.makeText(this, "Model: ${models[which]}", Toast.LENGTH_SHORT).show()
+            .setSingleChoiceItems(modelNames, selectedIndex) { dialog, which ->
+                prefs.edit().putString("model", modelIds[which]).apply()
+                Toast.makeText(this, modelNames[which], Toast.LENGTH_SHORT).show()
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel", null)
