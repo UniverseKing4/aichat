@@ -129,6 +129,8 @@ class MainActivity : AppCompatActivity() {
     
     private fun setupDrawer() {
         binding.toolbar.setNavigationOnClickListener {
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
             binding.drawerLayout.open()
         }
         
@@ -585,7 +587,7 @@ class MainActivity : AppCompatActivity() {
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                 val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
                 
-                if (lastVisible >= chatMessages.size - 2) {
+                if (lastVisible >= chatMessages.size - 3) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
@@ -603,7 +605,7 @@ class MainActivity : AppCompatActivity() {
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
                 val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
                 
-                if (lastVisible >= chatMessages.size - 2) {
+                if (lastVisible >= chatMessages.size - 3) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
