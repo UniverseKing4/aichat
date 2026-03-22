@@ -777,10 +777,6 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
         saveChatHistory()
     }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return super.onOptionsItemSelected(item)
-    }
     
     private fun toggleDarkMode() {
         val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
