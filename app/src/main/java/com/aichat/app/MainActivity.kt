@@ -99,14 +99,14 @@ class MainActivity : AppCompatActivity() {
         
         binding.chatRecyclerView.post {
             if (chatMessages.isNotEmpty()) {
-                binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
             }
         }
         
         wasAtBottom = prefs.getBoolean("was_at_bottom", true)
         if (wasAtBottom && chatMessages.isNotEmpty()) {
             binding.chatRecyclerView.post {
-                binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
             }
         }
     }
@@ -585,7 +585,7 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.postDelayed({
-                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
                 }, 300)
             }
         }
@@ -595,7 +595,7 @@ class MainActivity : AppCompatActivity() {
             val currentHeight = binding.root.height
             if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.postDelayed({
-                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
                 }, 50)
             }
             previousHeight = currentHeight
@@ -641,7 +641,7 @@ class MainActivity : AppCompatActivity() {
             val userMessage = ChatMessage(text, true, imageUri = imageToSend)
             chatMessages.add(userMessage)
             chatAdapter.notifyItemInserted(chatMessages.size - 1)
-            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
             updateEmptyState()
             
             binding.messageInput.text?.clear()
@@ -652,7 +652,7 @@ class MainActivity : AppCompatActivity() {
             chatMessages.add(loadingMessage)
             val loadingPosition = chatMessages.size - 1
             chatAdapter.notifyItemInserted(loadingPosition)
-            binding.chatRecyclerView.scrollToPosition(loadingPosition)
+            binding.chatRecyclerView.smoothScrollToPosition(loadingPosition)
             
             chatJob = CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -668,7 +668,7 @@ class MainActivity : AppCompatActivity() {
                             val botMessage = ChatMessage(response, false)
                             chatMessages.add(botMessage)
                             chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
                             saveChatHistory()
                             binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                         } catch (e: Exception) {
@@ -712,7 +712,7 @@ class MainActivity : AppCompatActivity() {
             val userMessage = ChatMessage("🎨 Generate: $prompt", true)
             chatMessages.add(userMessage)
             chatAdapter.notifyItemInserted(chatMessages.size - 1)
-            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
             updateEmptyState()
             
             binding.messageInput.text?.clear()
@@ -722,7 +722,7 @@ class MainActivity : AppCompatActivity() {
             chatMessages.add(loadingMessage)
             val loadingPosition = chatMessages.size - 1
             chatAdapter.notifyItemInserted(loadingPosition)
-            binding.chatRecyclerView.scrollToPosition(loadingPosition)
+            binding.chatRecyclerView.smoothScrollToPosition(loadingPosition)
             
             CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -738,7 +738,7 @@ class MainActivity : AppCompatActivity() {
                             val botMessage = ChatMessage("Generated image:", false, generatedImageUrl = imageUrl)
                             chatMessages.add(botMessage)
                             chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
                             saveChatHistory()
                             binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
                         } catch (e: Exception) {
