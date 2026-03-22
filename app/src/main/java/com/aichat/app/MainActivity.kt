@@ -112,10 +112,16 @@ class MainActivity : AppCompatActivity() {
     
     override fun onResume() {
         super.onResume()
-        if (binding.drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
-            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
-        }
+        binding.chatRecyclerView.postDelayed({
+            if (binding.drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
+                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
+            } else {
+                binding.messageInput.requestFocus()
+                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(binding.messageInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }
+        }, 100)
     }
     
     private fun initConversation() {
