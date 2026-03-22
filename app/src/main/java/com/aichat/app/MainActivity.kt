@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aichat.app.databinding.ActivityMainBinding
 import com.aichat.app.databinding.DialogApiKeyBinding
@@ -898,16 +899,16 @@ class MainActivity : AppCompatActivity() {
                     conversationManager.deleteConversation(currentConversationId)
                     val conversations = conversationManager.getConversations()
                     if (conversations.isNotEmpty()) {
-                        switchToConversation(conversations[0].id)
+                        loadConversation(conversations[0].id)
                     } else {
-                        val newConv = conversationManager.createNewConversation()
+                        val newConv = conversationManager.createNew()
                         currentConversationId = newConv.id
                         systemPrompt = newConv.systemPrompt
                         chatMessages.clear()
                         chatAdapter.notifyDataSetChanged()
                         updateEmptyState()
                     }
-                    updateConversationsList()
+                    updateDrawerConversations()
                     binding.drawerLayout.closeDrawer(GravityCompat.START)
                 } catch (e: Exception) {
                     e.printStackTrace()
