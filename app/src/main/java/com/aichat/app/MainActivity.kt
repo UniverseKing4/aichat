@@ -901,7 +901,7 @@ class MainActivity : AppCompatActivity() {
                     if (conversations.isNotEmpty()) {
                         loadConversation(conversations[0].id)
                     } else {
-                        val newConv = conversationManager.createNew()
+                        val newConv = conversationManager.createNew("New Chat")
                         currentConversationId = newConv.id
                         systemPrompt = newConv.systemPrompt
                         chatMessages.clear()
