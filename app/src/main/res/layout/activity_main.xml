@@ -37,7 +37,7 @@
                 app:iconPadding="0dp"
                 app:iconGravity="textStart"
                 app:icon="@drawable/ic_dark_mode"
-                app:iconSize="30dp"
+                app:iconSize="24dp"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Dark Mode" />
             
@@ -82,7 +82,7 @@
                 app:iconPadding="0dp"
                 app:iconGravity="textStart"
                 app:icon="@drawable/ic_clear"
-                app:iconSize="30dp"
+                app:iconSize="28dp"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Clear Chat" />
                 
