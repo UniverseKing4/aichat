@@ -48,6 +48,14 @@ class MainActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private var wasAtBottom = true
     
+    private val httpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
+    }
+    
     private lateinit var conversationManager: ConversationManager
     private var currentConversationId: String = ""
     private var systemPrompt: String = ""
@@ -1050,6 +1058,12 @@ class MainActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         saveChatHistory()
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        chatJob?.cancel()
+        chatJob = null
     }
     
     private fun toggleDarkMode() {
