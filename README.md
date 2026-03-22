@@ -166,7 +166,3 @@ app/
 ## License
 
 This project is open source.
-
-## Version
-
-Current: v0.0.72 (Production-Ready)
