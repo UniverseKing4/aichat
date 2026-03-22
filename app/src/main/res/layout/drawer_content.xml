@@ -7,6 +7,37 @@
     android:background="@color/surface">
 
     <include layout="@layout/nav_header" />
+    
+    <LinearLayout
+        android:id="@+id/selectionActionsLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="gone"
+        android:background="@color/primary">
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDeleteSelected"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Delete Selected"
+            android:textColor="@android:color/white"
+            app:icon="@drawable/ic_delete"
+            app:iconTint="@android:color/white" />
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelSelection"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Cancel"
+            android:textColor="@android:color/white" />
+    
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewChat"

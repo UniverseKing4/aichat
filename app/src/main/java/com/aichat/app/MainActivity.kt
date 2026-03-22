@@ -132,11 +132,18 @@ class MainActivity : AppCompatActivity() {
         val btnNewChat = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnNewChat)
         val btnExport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnExport)
         val btnImport = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnImport)
+        val btnDeleteSelected = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnDeleteSelected)
+        val btnCancelSelection = drawerView.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelSelection)
         val conversationsRv = drawerView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         btnNewChat.setOnClickListener { createNewChat() }
         btnExport.setOnClickListener { exportChat() }
         btnImport.setOnClickListener { selectFileToImport() }
+        btnDeleteSelected.setOnClickListener { deleteSelectedConversations() }
+        btnCancelSelection.setOnClickListener { 
+            exitSelectionMode()
+            updateDrawerConversations()
+        }
         
         conversationsRv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         updateDrawerConversations()
@@ -172,15 +179,17 @@ class MainActivity : AppCompatActivity() {
         conversationAdapter?.isSelectionMode = true
         conversationAdapter?.notifyDataSetChanged()
         
-        // Show action button in toolbar or as FAB
-        supportActionBar?.title = "Select Conversations"
-        invalidateOptionsMenu()
+        val drawerView = binding.navigationView.getChildAt(0)
+        val selectionActionsLayout = drawerView.findViewById<android.view.View>(R.id.selectionActionsLayout)
+        selectionActionsLayout?.visibility = android.view.View.VISIBLE
     }
     
     private fun exitSelectionMode() {
         conversationAdapter?.clearSelection()
-        supportActionBar?.title = getString(R.string.app_name)
-        invalidateOptionsMenu()
+        
+        val drawerView = binding.navigationView.getChildAt(0)
+        val selectionActionsLayout = drawerView.findViewById<android.view.View>(R.id.selectionActionsLayout)
+        selectionActionsLayout?.visibility = android.view.View.GONE
     }
     
     private fun deleteSelectedConversations() {
@@ -810,25 +819,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
-        val isSelectionMode = conversationAdapter?.isSelectionMode == true
-        menu.findItem(R.id.menu_delete_selected)?.isVisible = isSelectionMode
-        menu.findItem(R.id.menu_cancel_selection)?.isVisible = isSelectionMode
-        menu.findItem(R.id.menu_system_prompt)?.isVisible = !isSelectionMode
-        menu.findItem(R.id.menu_api_key)?.isVisible = !isSelectionMode
         return true
     }
     
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.menu_delete_selected -> {
-                deleteSelectedConversations()
-                true
-            }
-            R.id.menu_cancel_selection -> {
-                exitSelectionMode()
-                updateDrawerConversations()
-                true
-            }
             R.id.menu_system_prompt -> {
                 showSystemPromptDialog()
                 true

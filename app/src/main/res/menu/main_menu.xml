@@ -3,19 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     
     <item
-        android:id="@+id/menu_delete_selected"
-        android:title="Delete Selected"
-        android:icon="@drawable/ic_delete"
-        app:showAsAction="always"
-        android:visible="false" />
-    
-    <item
-        android:id="@+id/menu_cancel_selection"
-        android:title="Cancel"
-        app:showAsAction="always"
-        android:visible="false" />
-    
-    <item
         android:id="@+id/menu_system_prompt"
         android:title="System Instructions"
         app:showAsAction="never" />
