@@ -33,16 +33,16 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = messages[position]
         if (holder is UserViewHolder) {
-            holder.bind(message, position, onEditClick)
+            holder.bind(message, position, onEditClick, onDeleteClick)
         } else if (holder is BotViewHolder) {
-            holder.bind(message, position, onEditClick)
+            holder.bind(message, position, onEditClick, onDeleteClick)
         }
     }
     
     override fun getItemCount() = messages.size
     
     class UserViewHolder(private val binding: ItemMessageUserBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?) {
+        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
             binding.messageText.text = message.text
             if (message.imageUri != null) {
                 binding.attachedImage.visibility = View.VISIBLE
@@ -75,17 +75,19 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 .build()
         }
         
-        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?) {
+        fun bind(message: ChatMessage, position: Int, onEditClick: ((Int, String) -> Unit)?, onDeleteClick: ((Int) -> Unit)?) {
             if (message.isLoading) {
                 binding.messageText.visibility = View.GONE
                 binding.generatedImage.visibility = View.GONE
                 binding.loadingIndicator.visibility = View.VISIBLE
+                binding.deleteButton.visibility = View.GONE
                 binding.editButton.visibility = View.GONE
                 binding.copyButton.visibility = View.GONE
             } else {
                 binding.messageText.visibility = View.VISIBLE
                 markwon.setMarkdown(binding.messageText, message.text)
                 binding.loadingIndicator.visibility = View.GONE
+                binding.deleteButton.visibility = View.VISIBLE
                 binding.editButton.visibility = View.VISIBLE
                 binding.copyButton.visibility = View.VISIBLE
                 if (message.generatedImageUrl != null) {
