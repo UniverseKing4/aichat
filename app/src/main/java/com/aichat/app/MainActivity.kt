@@ -585,8 +585,8 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
-                val lastVisible = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
-                if (lastVisible >= chatMessages.size - 2) {
+                val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
+                if (lastVisible >= chatMessages.size - 1) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
@@ -602,8 +602,8 @@ class MainActivity : AppCompatActivity() {
             val currentHeight = binding.root.height
             if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
                 val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
-                val lastVisible = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
-                if (lastVisible >= chatMessages.size - 2) {
+                val lastVisible = layoutManager?.findLastVisibleItemPosition() ?: -1
+                if (lastVisible >= chatMessages.size - 1) {
                     binding.chatRecyclerView.postDelayed({
                         layoutManager?.scrollToPositionWithOffset(chatMessages.size - 1, 0)
                         binding.chatRecyclerView.postDelayed({
