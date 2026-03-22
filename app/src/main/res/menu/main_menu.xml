@@ -5,16 +5,19 @@
     <item
         android:id="@+id/menu_delete_conversation"
         android:title="Delete Conversation"
+        android:icon="@drawable/ic_delete"
         app:showAsAction="never" />
     
     <item
         android:id="@+id/menu_system_prompt"
         android:title="System Instructions"
+        android:icon="@drawable/ic_instructions"
         app:showAsAction="never" />
     
     <item
         android:id="@+id/menu_api_key"
         android:title="API Key Settings"
+        android:icon="@drawable/ic_key"
         app:showAsAction="never" />
     
 </menu>

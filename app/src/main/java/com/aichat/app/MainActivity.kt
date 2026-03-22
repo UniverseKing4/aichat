@@ -963,6 +963,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        try {
+            val method = menu.javaClass.getDeclaredMethod("setOptionalIconsVisible", Boolean::class.javaPrimitiveType)
+            method.isAccessible = true
+            method.invoke(menu, true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         return true
     }
     
