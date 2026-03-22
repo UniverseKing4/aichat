@@ -172,19 +172,15 @@ class MainActivity : AppCompatActivity() {
         conversationAdapter?.isSelectionMode = true
         conversationAdapter?.notifyDataSetChanged()
         
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Select Conversations")
-            .setMessage("Tap conversations to select, then choose an action")
-            .setPositiveButton("Delete Selected") { _, _ ->
-                deleteSelectedConversations()
-            }
-            .setNegativeButton("Cancel") { _, _ ->
-                conversationAdapter?.clearSelection()
-            }
-            .setOnCancelListener {
-                conversationAdapter?.clearSelection()
-            }
-            .show()
+        // Show action button in toolbar or as FAB
+        supportActionBar?.title = "Select Conversations"
+        invalidateOptionsMenu()
+    }
+    
+    private fun exitSelectionMode() {
+        conversationAdapter?.clearSelection()
+        supportActionBar?.title = getString(R.string.app_name)
+        invalidateOptionsMenu()
     }
     
     private fun deleteSelectedConversations() {
@@ -192,7 +188,6 @@ class MainActivity : AppCompatActivity() {
             val selected = conversationAdapter?.selectedItems?.toList() ?: emptyList()
             if (selected.isEmpty()) {
                 Toast.makeText(this, "No conversations selected", Toast.LENGTH_SHORT).show()
-                conversationAdapter?.clearSelection()
                 return
             }
             
@@ -217,18 +212,15 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     
-                    conversationAdapter?.clearSelection()
+                    exitSelectionMode()
                     updateDrawerConversations()
                     Toast.makeText(this, "Deleted ${selected.size} conversations", Toast.LENGTH_SHORT).show()
                 }
-                .setNegativeButton("Cancel") { _, _ ->
-                    conversationAdapter?.clearSelection()
-                }
+                .setNegativeButton("Cancel", null)
                 .show()
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Error deleting conversations", Toast.LENGTH_SHORT).show()
-            conversationAdapter?.clearSelection()
         }
     }
     
@@ -818,11 +810,25 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
+        val isSelectionMode = conversationAdapter?.isSelectionMode == true
+        menu.findItem(R.id.menu_delete_selected)?.isVisible = isSelectionMode
+        menu.findItem(R.id.menu_cancel_selection)?.isVisible = isSelectionMode
+        menu.findItem(R.id.menu_system_prompt)?.isVisible = !isSelectionMode
+        menu.findItem(R.id.menu_api_key)?.isVisible = !isSelectionMode
         return true
     }
     
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+            R.id.menu_delete_selected -> {
+                deleteSelectedConversations()
+                true
+            }
+            R.id.menu_cancel_selection -> {
+                exitSelectionMode()
+                updateDrawerConversations()
+                true
+            }
             R.id.menu_system_prompt -> {
                 showSystemPromptDialog()
                 true
