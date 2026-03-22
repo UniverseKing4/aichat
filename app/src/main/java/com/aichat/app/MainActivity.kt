@@ -191,17 +191,26 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Delete Chat")
             .setMessage("Delete \"${conv.name}\"?")
             .setPositiveButton("Delete") { _, _ ->
-                conversationManager.deleteConversation(conv.id)
-                if (currentConversationId == conv.id) {
-                    val remaining = conversationManager.getConversations()
-                    if (remaining.isEmpty()) {
-                        val newConv = conversationManager.createNew("Chat 1")
-                        loadConversation(newConv.id)
-                    } else {
-                        loadConversation(remaining.first().id)
+                try {
+                    // Cancel any ongoing chat job
+                    chatJob?.cancel()
+                    chatJob = null
+                    
+                    conversationManager.deleteConversation(conv.id)
+                    if (currentConversationId == conv.id) {
+                        val remaining = conversationManager.getConversations()
+                        if (remaining.isEmpty()) {
+                            val newConv = conversationManager.createNew("Chat 1")
+                            loadConversation(newConv.id)
+                        } else {
+                            loadConversation(remaining.first().id)
+                        }
                     }
+                    updateDrawerConversations()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Toast.makeText(this, "Error deleting chat", Toast.LENGTH_SHORT).show()
                 }
-                updateDrawerConversations()
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -289,18 +298,25 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun loadConversation(convId: String) {
-        saveChatHistory()
-        currentConversationId = convId
-        prefs.edit().putString("last_conv_id", convId).apply()
-        chatMessages.clear()
-        loadChatHistory()
-        chatAdapter.notifyDataSetChanged()
-        updateEmptyState()
-        updateDrawerConversations()
-        binding.drawerLayout.close()
-        
-        val conv = conversationManager.getConversations().find { it.id == convId }
-        systemPrompt = conv?.systemPrompt ?: ""
+        try {
+            chatJob?.cancel()
+            chatJob = null
+            saveChatHistory()
+            currentConversationId = convId
+            prefs.edit().putString("last_conv_id", convId).apply()
+            chatMessages.clear()
+            loadChatHistory()
+            chatAdapter.notifyDataSetChanged()
+            updateEmptyState()
+            updateDrawerConversations()
+            binding.drawerLayout.close()
+            
+            val conv = conversationManager.getConversations().find { it.id == convId }
+            systemPrompt = conv?.systemPrompt ?: ""
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error loading conversation", Toast.LENGTH_SHORT).show()
+        }
     }
     
     private fun createNewChat() {
@@ -455,47 +471,66 @@ class MainActivity : AppCompatActivity() {
         
         binding.sendButton.isEnabled = false
         
-        val imageToSend = selectedImageUri
-        val userMessage = ChatMessage(text, true, imageUri = imageToSend)
-        chatMessages.add(userMessage)
-        chatAdapter.notifyItemInserted(chatMessages.size - 1)
-        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-        updateEmptyState()
-        
-        binding.messageInput.text?.clear()
-        removeImage()
-        
-        // Add loading message
-        val loadingMessage = ChatMessage("", false, isLoading = true)
-        chatMessages.add(loadingMessage)
-        val loadingPosition = chatMessages.size - 1
-        chatAdapter.notifyItemInserted(loadingPosition)
-        binding.chatRecyclerView.scrollToPosition(loadingPosition)
-        
-        chatJob = CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = callChatAPI(imageToSend)
-                withContext(Dispatchers.Main) {
-                    // Remove loading message
-                    chatMessages.removeAt(loadingPosition)
-                    chatAdapter.notifyItemRemoved(loadingPosition)
-                    
-                    val botMessage = ChatMessage(response, false)
-                    chatMessages.add(botMessage)
-                    chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-                    saveChatHistory()
-                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    // Remove loading message
-                    chatMessages.removeAt(loadingPosition)
-                    chatAdapter.notifyItemRemoved(loadingPosition)
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                    binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+        try {
+            val imageToSend = selectedImageUri
+            val userMessage = ChatMessage(text, true, imageUri = imageToSend)
+            chatMessages.add(userMessage)
+            chatAdapter.notifyItemInserted(chatMessages.size - 1)
+            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            updateEmptyState()
+            
+            binding.messageInput.text?.clear()
+            removeImage()
+            
+            // Add loading message
+            val loadingMessage = ChatMessage("", false, isLoading = true)
+            chatMessages.add(loadingMessage)
+            val loadingPosition = chatMessages.size - 1
+            chatAdapter.notifyItemInserted(loadingPosition)
+            binding.chatRecyclerView.scrollToPosition(loadingPosition)
+            
+            chatJob = CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val response = callChatAPI(imageToSend)
+                    withContext(Dispatchers.Main) {
+                        try {
+                            // Remove loading message
+                            if (loadingPosition < chatMessages.size && chatMessages.getOrNull(loadingPosition)?.isLoading == true) {
+                                chatMessages.removeAt(loadingPosition)
+                                chatAdapter.notifyItemRemoved(loadingPosition)
+                            }
+                            
+                            val botMessage = ChatMessage(response, false)
+                            chatMessages.add(botMessage)
+                            chatAdapter.notifyItemInserted(chatMessages.size - 1)
+                            binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                            saveChatHistory()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        try {
+                            // Remove loading message
+                            if (loadingPosition < chatMessages.size && chatMessages.getOrNull(loadingPosition)?.isLoading == true) {
+                                chatMessages.removeAt(loadingPosition)
+                                chatAdapter.notifyItemRemoved(loadingPosition)
+                            }
+                            Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
+                        }
+                    }
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
         }
     }
     
@@ -513,6 +548,7 @@ class MainActivity : AppCompatActivity() {
             chatMessages.add(userMessage)
             chatAdapter.notifyItemInserted(chatMessages.size - 1)
             binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            updateEmptyState()
             
             binding.messageInput.text?.clear()
             
@@ -645,6 +681,12 @@ class MainActivity : AppCompatActivity() {
             .readTimeout(120, TimeUnit.SECONDS)
             .build()
         
+        // For image generation without API key, use direct pollinations.ai URL
+        if (apiKey.isEmpty()) {
+            val encodedPrompt = java.net.URLEncoder.encode(prompt, "UTF-8")
+            return "https://image.pollinations.ai/prompt/$encodedPrompt?width=1024&height=1024&model=flux&nologo=true"
+        }
+        
         val json = JSONObject().apply {
             put("prompt", prompt)
             put("model", "flux")
@@ -652,13 +694,11 @@ class MainActivity : AppCompatActivity() {
         }
         
         val requestBuilder = Request.Builder()
-            .url(if (apiKey.isEmpty()) PROXY_URL else IMAGE_URL)
+            .url(IMAGE_URL)
             .addHeader("Content-Type", "application/json")
             .post(json.toString().toRequestBody("application/json".toMediaType()))
         
-        if (apiKey.isNotEmpty()) {
-            requestBuilder.addHeader("Authorization", "Bearer $apiKey")
-        }
+        requestBuilder.addHeader("Authorization", "Bearer $apiKey")
         
         client.newCall(requestBuilder.build()).execute().use { response ->
             if (!response.isSuccessful) {
@@ -730,10 +770,16 @@ class MainActivity : AppCompatActivity() {
             .setTitle("Clear Chat")
             .setMessage("Delete all messages?")
             .setPositiveButton("Clear") { _, _ ->
-                chatMessages.clear()
-                chatAdapter.notifyDataSetChanged()
-                conversationManager.saveMessages(currentConversationId, "[]")
-                updateEmptyState()
+                try {
+                    chatJob?.cancel()
+                    chatJob = null
+                    chatMessages.clear()
+                    chatAdapter.notifyDataSetChanged()
+                    conversationManager.saveMessages(currentConversationId, "[]")
+                    updateEmptyState()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
