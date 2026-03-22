@@ -411,7 +411,7 @@ class MainActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Save") { _, _ ->
                 val newText = input.text.toString()
-                if (newText.isNotBlank()) {
+                if (newText.isNotBlank() && position < chatMessages.size) {
                     chatMessages[position] = chatMessages[position].copy(text = newText)
                     chatAdapter.notifyItemChanged(position)
                     saveChatHistory()
