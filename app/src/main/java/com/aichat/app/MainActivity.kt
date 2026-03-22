@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var conversationManager: ConversationManager
     private var currentConversationId: String = ""
     private var systemPrompt: String = ""
+    private var conversationAdapter: ConversationAdapter? = null
     
     private val pickImage = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -145,24 +146,90 @@ class MainActivity : AppCompatActivity() {
         val conversationsRv = binding.navigationView.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.conversationsRecyclerView)
         
         val convs = conversationManager.getConversations()
-        conversationsRv?.adapter = ConversationAdapter(
+        conversationAdapter = ConversationAdapter(
             conversations = convs,
             currentId = currentConversationId,
             onClick = { conv -> loadConversation(conv.id) },
             onLongClick = { conv -> showConversationOptions(conv) }
         )
+        conversationsRv?.adapter = conversationAdapter
     }
     
     private fun showConversationOptions(conv: Conversation) {
         MaterialAlertDialogBuilder(this)
             .setTitle(conv.name)
-            .setItems(arrayOf("Rename", "Delete")) { _, which ->
+            .setItems(arrayOf("Rename", "Delete", "Select Multiple")) { _, which ->
                 when (which) {
                     0 -> renameConversation(conv)
                     1 -> deleteConversation(conv)
+                    2 -> enterSelectionMode()
                 }
             }
             .show()
+    }
+    
+    private fun enterSelectionMode() {
+        conversationAdapter?.isSelectionMode = true
+        conversationAdapter?.notifyDataSetChanged()
+        
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Select Conversations")
+            .setMessage("Tap conversations to select, then choose an action")
+            .setPositiveButton("Delete Selected") { _, _ ->
+                deleteSelectedConversations()
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                conversationAdapter?.clearSelection()
+            }
+            .setOnCancelListener {
+                conversationAdapter?.clearSelection()
+            }
+            .show()
+    }
+    
+    private fun deleteSelectedConversations() {
+        try {
+            val selected = conversationAdapter?.selectedItems?.toList() ?: emptyList()
+            if (selected.isEmpty()) {
+                Toast.makeText(this, "No conversations selected", Toast.LENGTH_SHORT).show()
+                conversationAdapter?.clearSelection()
+                return
+            }
+            
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Delete ${selected.size} Conversations")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Delete") { _, _ ->
+                    chatJob?.cancel()
+                    chatJob = null
+                    
+                    selected.forEach { id ->
+                        conversationManager.deleteConversation(id)
+                    }
+                    
+                    if (selected.contains(currentConversationId)) {
+                        val remaining = conversationManager.getConversations()
+                        if (remaining.isEmpty()) {
+                            val newConv = conversationManager.createNew("Chat 1")
+                            loadConversation(newConv.id)
+                        } else {
+                            loadConversation(remaining.first().id)
+                        }
+                    }
+                    
+                    conversationAdapter?.clearSelection()
+                    updateDrawerConversations()
+                    Toast.makeText(this, "Deleted ${selected.size} conversations", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Cancel") { _, _ ->
+                    conversationAdapter?.clearSelection()
+                }
+                .show()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error deleting conversations", Toast.LENGTH_SHORT).show()
+            conversationAdapter?.clearSelection()
+        }
     }
     
     private fun renameConversation(conv: Conversation) {
