@@ -585,19 +585,20 @@ class MainActivity : AppCompatActivity() {
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.postDelayed({
-                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
-                }, 100)
+                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+                }, 300)
             }
         }
         
+        var previousHeight = 0
         binding.root.viewTreeObserver.addOnGlobalLayoutListener {
-            val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
-            val lastVisible = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
-            if (lastVisible >= chatMessages.size - 2 && chatMessages.isNotEmpty()) {
-                binding.chatRecyclerView.post {
+            val currentHeight = binding.root.height
+            if (previousHeight > 0 && currentHeight < previousHeight && chatMessages.isNotEmpty()) {
+                binding.chatRecyclerView.postDelayed({
                     binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-                }
+                }, 50)
             }
+            previousHeight = currentHeight
         }
         
         updateDarkModeIcon()
@@ -964,15 +965,9 @@ class MainActivity : AppCompatActivity() {
         val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
         val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
         
-        val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
-        val isAtBottom = layoutManager?.let {
-            val lastVisiblePosition = it.findLastCompletelyVisibleItemPosition()
-            lastVisiblePosition >= chatMessages.size - 1
-        } ?: true
-        
         prefs.edit()
             .putBoolean("dark_mode", !isDark)
-            .putBoolean("was_at_bottom", isAtBottom)
+            .putBoolean("was_at_bottom", true)
             .apply()
         
         val newMode = if (isDark) {
