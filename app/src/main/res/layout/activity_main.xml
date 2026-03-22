@@ -41,6 +41,7 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 app:icon="@drawable/ic_model"
+                app:iconSize="30dp"
                 app:iconTint="?attr/colorOnSurface"
                 android:contentDescription="Model" />
             

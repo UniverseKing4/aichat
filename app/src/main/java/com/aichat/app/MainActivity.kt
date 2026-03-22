@@ -91,7 +91,6 @@ class MainActivity : AppCompatActivity() {
         
         setSupportActionBar(binding.toolbar)
         window.setBackgroundDrawableResource(R.color.background)
-        window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         
         conversationManager = ConversationManager(this)
         initConversation()
@@ -108,6 +107,14 @@ class MainActivity : AppCompatActivity() {
                     binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
                 }, 100)
             }
+        }
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        if (binding.drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+            imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
         }
     }
     
