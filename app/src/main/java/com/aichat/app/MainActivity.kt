@@ -45,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var chatAdapter: ChatAdapter
     private var chatJob: Job? = null
     private var selectedImageUri: Uri? = null
+    private var wasAtBottom = true
     
     private lateinit var conversationManager: ConversationManager
     private var currentConversationId: String = ""
@@ -98,6 +99,13 @@ class MainActivity : AppCompatActivity() {
         
         binding.chatRecyclerView.post {
             if (chatMessages.isNotEmpty()) {
+                binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
+            }
+        }
+        
+        wasAtBottom = prefs.getBoolean("was_at_bottom", true)
+        if (wasAtBottom && chatMessages.isNotEmpty()) {
+            binding.chatRecyclerView.post {
                 binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
             }
         }
@@ -576,12 +584,18 @@ class MainActivity : AppCompatActivity() {
         
         binding.messageInput.setOnFocusChangeListener { _, hasFocus ->
             if (hasFocus && chatMessages.isNotEmpty()) {
+                binding.chatRecyclerView.postDelayed({
+                    binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
+                }, 100)
+            }
+        }
+        
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener {
+            val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+            val lastVisible = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
+            if (lastVisible >= chatMessages.size - 2 && chatMessages.isNotEmpty()) {
                 binding.chatRecyclerView.post {
-                    val layoutManager = binding.chatRecyclerView.layoutManager as androidx.recyclerview.widget.LinearLayoutManager
-                    val lastVisible = layoutManager.findLastCompletelyVisibleItemPosition()
-                    if (lastVisible >= chatMessages.size - 2) {
-                        binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
-                    }
+                    binding.chatRecyclerView.scrollToPosition(chatMessages.size - 1)
                 }
             }
         }
@@ -950,7 +964,16 @@ class MainActivity : AppCompatActivity() {
         val currentMode = resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
         val isDark = currentMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
         
-        prefs.edit().putBoolean("dark_mode", !isDark).apply()
+        val layoutManager = binding.chatRecyclerView.layoutManager as? LinearLayoutManager
+        val isAtBottom = layoutManager?.let {
+            val lastVisiblePosition = it.findLastCompletelyVisibleItemPosition()
+            lastVisiblePosition >= chatMessages.size - 1
+        } ?: true
+        
+        prefs.edit()
+            .putBoolean("dark_mode", !isDark)
+            .putBoolean("was_at_bottom", isAtBottom)
+            .apply()
         
         val newMode = if (isDark) {
             AppCompatDelegate.MODE_NIGHT_NO
