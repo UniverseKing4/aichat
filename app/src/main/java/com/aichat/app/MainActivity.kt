@@ -91,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         
         setSupportActionBar(binding.toolbar)
         window.setBackgroundDrawableResource(R.color.background)
+        window.setSoftInputMode(android.view.WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
         
         conversationManager = ConversationManager(this)
         initConversation()
