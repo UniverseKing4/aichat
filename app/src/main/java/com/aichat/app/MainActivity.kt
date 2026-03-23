@@ -123,10 +123,7 @@ class MainActivity : AppCompatActivity() {
             if (binding.drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
                 val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
                 imm.hideSoftInputFromWindow(binding.root.windowToken, 0)
-            } else {
-                binding.messageInput.requestFocus()
-                val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-                imm.showSoftInput(binding.messageInput, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+                binding.messageInput.clearFocus()
             }
         }, 100)
     }
