@@ -96,14 +96,7 @@ class ChatAdapter(private val messages: List<ChatMessage>) : RecyclerView.Adapte
                 binding.deleteButton.visibility = View.VISIBLE
                 binding.editButton.visibility = View.VISIBLE
                 binding.copyButton.visibility = View.VISIBLE
-                if (message.generatedImageUrl != null) {
-                    binding.generatedImage.visibility = View.VISIBLE
-                    Glide.with(binding.root.context)
-                        .load(message.generatedImageUrl)
-                        .into(binding.generatedImage)
-                } else {
-                    binding.generatedImage.visibility = View.GONE
-                }
+                binding.generatedImage.visibility = View.GONE
             }
             
             binding.deleteButton.setOnClickListener {

@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val API_URL = "https://gen.pollinations.ai/v1/chat/completions"
-        private const val IMAGE_URL = "https://gen.pollinations.ai/v1/images/generations"
         private const val PROXY_URL = "https://aivision-proxy.universeking.workers.dev"
     }
     
@@ -442,8 +441,7 @@ class MainActivity : AppCompatActivity() {
                     val message = ChatMessage(
                         text = obj.getString("text"),
                         isUser = obj.getBoolean("isUser"),
-                        imageUri = if (obj.has("imageUri")) Uri.parse(obj.getString("imageUri")) else null,
-                        generatedImageUrl = if (obj.has("generatedImageUrl")) obj.getString("generatedImageUrl") else null
+                        imageUri = if (obj.has("imageUri")) Uri.parse(obj.getString("imageUri")) else null
                     )
                     chatMessages.add(message)
                 }
@@ -461,7 +459,6 @@ class MainActivity : AppCompatActivity() {
                     put("text", message.text)
                     put("isUser", message.isUser)
                     if (message.imageUri != null) put("imageUri", message.imageUri.toString())
-                    if (message.generatedImageUrl != null) put("generatedImageUrl", message.generatedImageUrl)
                 }
                 jsonArray.put(obj)
             }
@@ -632,7 +629,6 @@ class MainActivity : AppCompatActivity() {
         binding.sendButton.setOnClickListener { sendMessage() }
         binding.attachImageButton.setOnClickListener { checkPermissionAndSelectImage() }
         binding.removeImageButton.setOnClickListener { removeImage() }
-        binding.generateImageButton.setOnClickListener { generateImage() }
         binding.modelButton.setOnClickListener { showModelSelectionDialog() }
         binding.newChatButton.setOnClickListener { createNewChatQuick() }
         binding.clearButton.setOnClickListener { clearChat() }
@@ -784,74 +780,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun generateImage() {
-        val prompt = binding.messageInput.text.toString().trim()
-        if (prompt.isEmpty()) {
-            Toast.makeText(this, "Enter image description", Toast.LENGTH_SHORT).show()
-            return
-        }
-        
-        binding.sendButton.isEnabled = false
-        
-        try {
-            val userMessage = ChatMessage("🎨 Generate: $prompt", true)
-            chatMessages.add(userMessage)
-            chatAdapter.notifyItemInserted(chatMessages.size - 1)
-            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
-            updateEmptyState()
-            
-            binding.messageInput.text?.clear()
-            
-            // Add loading message
-            val loadingMessage = ChatMessage("Generating image...", false, isLoading = true)
-            chatMessages.add(loadingMessage)
-            val loadingPosition = chatMessages.size - 1
-            chatAdapter.notifyItemInserted(loadingPosition)
-            binding.chatRecyclerView.smoothScrollToPosition(loadingPosition)
-            
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val imageUrl = callImageAPI(prompt)
-                    withContext(Dispatchers.Main) {
-                        try {
-                            // Remove loading message
-                            if (loadingPosition < chatMessages.size && chatMessages[loadingPosition].isLoading) {
-                                chatMessages.removeAt(loadingPosition)
-                                chatAdapter.notifyItemRemoved(loadingPosition)
-                            }
-                            
-                            val botMessage = ChatMessage("Generated image:", false, generatedImageUrl = imageUrl)
-                            chatMessages.add(botMessage)
-                            chatAdapter.notifyItemInserted(chatMessages.size - 1)
-                            binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size - 1)
-                            saveChatHistory()
-                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                } catch (e: Exception) {
-                    withContext(Dispatchers.Main) {
-                        try {
-                            // Remove loading message
-                            if (loadingPosition < chatMessages.size && chatMessages[loadingPosition].isLoading) {
-                                chatMessages.removeAt(loadingPosition)
-                                chatAdapter.notifyItemRemoved(loadingPosition)
-                            }
-                            Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_LONG).show()
-                            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            binding.sendButton.isEnabled = !binding.messageInput.text.isNullOrBlank()
-        }
-    }
-    
     private fun callChatAPI(imageUri: Uri?): String {
         val apiKey = prefs.getString("api_key", "") ?: ""
         val model = prefs.getString("model", "openai") ?: "openai"
@@ -873,7 +801,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 
                 // Add conversation history
-                chatMessages.filter { !it.isLoading && it.generatedImageUrl == null }.forEach { msg ->
+                chatMessages.filter { !it.isLoading }.forEach { msg ->
                     put(JSONObject().apply {
                         put("role", if (msg.isUser) "user" else "assistant")
                         put("content", msg.text)
@@ -923,53 +851,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun callImageAPI(prompt: String): String {
-        val apiKey = prefs.getString("api_key", "") ?: ""
-        
-        val client = OkHttpClient.Builder()
-            .connectTimeout(120, TimeUnit.SECONDS)
-            .readTimeout(120, TimeUnit.SECONDS)
-            .build()
-        
-        // For image generation without API key, use direct pollinations.ai URL
-        if (apiKey.isEmpty()) {
-            val encodedPrompt = java.net.URLEncoder.encode(prompt, "UTF-8")
-            return "https://image.pollinations.ai/prompt/$encodedPrompt?width=1024&height=1024&model=flux&nologo=true"
-        }
-        
-        val json = JSONObject().apply {
-            put("prompt", prompt)
-            put("model", "flux")
-            put("size", "1024x1024")
-        }
-        
-        val requestBuilder = Request.Builder()
-            .url(IMAGE_URL)
-            .addHeader("Content-Type", "application/json")
-            .post(json.toString().toRequestBody("application/json".toMediaType()))
-        
-        requestBuilder.addHeader("Authorization", "Bearer $apiKey")
-        
-        client.newCall(requestBuilder.build()).execute().use { response ->
-            if (!response.isSuccessful) {
-                val errorBody = response.body?.string()
-                throw Exception("API error ${response.code}: $errorBody")
-            }
-            val body = response.body?.string() ?: throw Exception("Empty response")
-            val jsonResponse = JSONObject(body)
-            val dataArray = jsonResponse.getJSONArray("data")
-            val firstItem = dataArray.getJSONObject(0)
-            
-            // Try to get URL first, if not available get b64_json
-            return if (firstItem.has("url")) {
-                firstItem.getString("url")
-            } else if (firstItem.has("b64_json")) {
-                "data:image/png;base64,${firstItem.getString("b64_json")}"
-            } else {
-                throw Exception("No image data in response")
-            }
-        }
-    }
     
     private fun bitmapToBase64(bitmap: Bitmap): String {
         val maxSize = 1024
